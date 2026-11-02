@@ -313,79 +313,98 @@ for mp in lotes_mp:
     mp["dif_final"] = arred(env - (proc - desc)) if env_fim else None
 
 # ================================ ALERTAS ================================
+# Mesmas regras do motor de alertas original. Cada detalhe sai em português e inglês.
 
 alertas = []
 
-def alerta(nivel, tipo, fabrica, produto, lote, detalhe, data):
+def alerta(nivel, tipo, fabrica, produto, lote, pt, en, data):
     alertas.append(dict(nivel=nivel, tipo=tipo, fabrica=fabrica, produto=produto,
-                        lote=lote, detalhe=detalhe, data=iso(data)))
+                        lote=lote, detalhe=dict(pt=pt, en=en), data=iso(data)))
 
-fmt = lambda v: f"{v:,.0f}".replace(",", ".")              # 12.345
-pct = lambda v: f"{v * 100:.1f}%".replace(".", ",")         # 107,7%
+def n_pt(v, d=0):                                            # 12.345,6
+    return f"{v:,.{d}f}".replace(",", "#").replace(".", ",").replace("#", ".")
+
+def n_en(v, d=0):                                            # 12,345.6
+    return f"{v:,.{d}f}"
+
 lotes_com_envase = set(lf["lote_proc"] for lf in lotes_finais)
 kg_env = defaultdict(float)
 for lf in lotes_finais:
     kg_env[lf["lote_proc"]] += lf["kg"]
 
 for lp in lotes_proc:
-    if lp["status"] == "Envasado" and lp["lote"] not in lotes_com_envase:
-        alerta("Crítico", "Status × envase", lp["fabrica"], lp["produto"], lp["lote"],
-               "Lote marcado como Envasado, mas não há envase com este lote", lp["data_status"])
-    if lp["status"] == "Aprovado – não envasado" and lp["lote"] in lotes_com_envase:
-        alerta("Atenção", "Status × envase", lp["fabrica"], lp["produto"], lp["lote"],
-               "Lote marcado como Aprovado – não envasado, mas já existe envase", lp["data_status"])
+    f_, p_, l_ = lp["fabrica"], lp["produto"], lp["lote"]
+    if lp["status"] == "Envasado" and l_ not in lotes_com_envase:
+        alerta("Crítico", "Status × envase", f_, p_, l_,
+               "Lote marcado como envasado, mas não há envase com este lote",
+               "Lot marked as packed, but no packing record exists for it", lp["data_status"])
+    if lp["status"] == "Aprovado – não envasado" and l_ in lotes_com_envase:
+        alerta("Atenção", "Status × envase", f_, p_, l_,
+               "Lote marcado como aprovado e não envasado, mas já existe envase",
+               "Lot marked as approved and not packed, but a packing record already exists", lp["data_status"])
     if lp["status"] is None:
-        alerta("Atenção", "Cadastro", lp["fabrica"], lp["produto"], lp["lote"], "Lote processado sem status", lp["data"])
-    if lp["lote"] in kg_env and lp["kg"]:
-        rend = kg_env[lp["lote"]] / lp["kg"]
+        alerta("Atenção", "Cadastro", f_, p_, l_, "Lote processado sem status", "Processed lot has no status", lp["data"])
+    if l_ in kg_env and lp["kg"]:
+        rend = kg_env[l_] / lp["kg"]
         if abs(rend - 1) > TOL_REND:
-            alerta("Crítico" if abs(rend - 1) > TOL_REND_CRIT else "Atenção", "Rendimento", lp["fabrica"],
-                   lp["produto"], lp["lote"],
-                   f"Envasado {fmt(kg_env[lp['lote']])} kg de {fmt(lp['kg'])} kg processados ({pct(rend)})",
+            alerta("Crítico" if abs(rend - 1) > TOL_REND_CRIT else "Atenção", "Rendimento", f_, p_, l_,
+                   f"Envasados {n_pt(kg_env[l_])} kg de {n_pt(lp['kg'])} kg processados ({n_pt(rend * 100, 1)}%)",
+                   f"{n_en(kg_env[l_])} kg packed from {n_en(lp['kg'])} kg processed ({n_en(rend * 100, 1)}%)",
                    lp["data_status"])
 
 for lf in lotes_finais:
     ref = lf["data_inicial"] or lf["data_final"]
+    f_, p_, l_ = lf["fabrica"], lf["produto"], lf["lote_final"]
     if lf["lote_proc"] not in LP:
-        alerta("Info", "Sem lote de origem", lf["fabrica"], lf["produto"], lf["lote_final"],
-               f"Lote processado {lf['lote_proc']} não existe no cadastro", ref)
+        alerta("Info", "Sem lote de origem", f_, p_, l_,
+               f"O lote processado {lf['lote_proc']} não existe no cadastro",
+               f"Processed lot {lf['lote_proc']} is not in the register", ref)
     if lf["qualidade"] != "Aprovado":
-        alerta("Atenção", "Qualidade", lf["fabrica"], lf["produto"], lf["lote_final"],
-               f"Status de qualidade: {lf['qualidade']}", ref)
+        alerta("Atenção", "Qualidade", f_, p_, l_, "Liberação de qualidade pendente",
+               "Quality release pending", ref)
     if lf["data_reporte"] is None and lf["data_final"] and lf["data_final"] <= CORTE - timedelta(days=4):
-        alerta("Atenção", "Sem data de reporte", lf["fabrica"], lf["produto"], lf["lote_final"],
-               "Envase sem data de reporte preenchida", ref)
+        alerta("Atenção", "Sem data de reporte", f_, p_, l_, "Envase sem data de reporte",
+               "Packing record has no report date", ref)
     if lf["data_inicial"] is None:
-        alerta("Atenção", "Sem data inicial", lf["fabrica"], lf["produto"], lf["lote_final"],
-               "Envase sem data inicial: aparece como (em branco) nos gráficos por semana", lf["data_final"])
-    if abs(lf["peso_un_informado"] - lf["peso_un_contagem"]) / lf["peso_un_contagem"] > TOL_PESO:
-        alerta("Atenção", "Peso por unidade", lf["fabrica"], lf["produto"], lf["lote_final"],
-               f"Peso informado difere {abs(lf['peso_un_informado'] - lf['peso_un_contagem']):.2f} kg do peso pela contagem ({lf['peso_un_contagem']:.2f} kg)".replace(".", ","),
-               ref)
+        alerta("Atenção", "Sem data inicial", f_, p_, l_,
+               "Envase sem data inicial; fica fora dos gráficos por semana",
+               "Packing record has no start date; it is left out of the weekly charts", lf["data_final"])
+    dif = abs(lf["peso_un_informado"] - lf["peso_un_contagem"])
+    if dif / lf["peso_un_contagem"] > TOL_PESO:
+        alerta("Atenção", "Peso por unidade", f_, p_, l_,
+               f"Peso informado difere {n_pt(dif, 2)} kg do peso pela contagem ({n_pt(lf['peso_un_contagem'], 2)} kg)",
+               f"Reported weight is {n_en(dif, 2)} kg off the counted weight ({n_en(lf['peso_un_contagem'], 2)} kg)", ref)
     if lf["status_emb"] == "Sem lançamento":
-        alerta("Atenção", "Embalagem", lf["fabrica"], lf["produto"], lf["lote_final"],
-               "Envase sem embalagens consumidas lançadas", ref)
+        alerta("Atenção", "Embalagem", f_, p_, l_, "Envase sem embalagens consumidas lançadas",
+               "No packaging usage recorded for this lot", ref)
 
 fora = defaultdict(int)
 for lf in lotes_finais:
     if lf["status_emb"] == "Fora":
         fora[(lf["fabrica"], lf["tipo"])] += 1
 for (fab, tipo), n in sorted(fora.items()):
-    txt = (f"Industrial com embalagens fora de ±{TOL_EMB_INDUSTRIAL} do número de packs em {n} lotes"
-           if tipo == "Industrial" else
-           f"Varejo fora de ±{TOL_EMB_VAREJO:.0%} de embalagens por unidade em {n} lotes")
-    alerta("Atenção", "Embalagem", fab, None, tipo, txt + " (lista na aba Envase)", None)
+    if tipo == "Industrial":
+        pt = f"{n} lotes industriais com embalagens fora de ±{TOL_EMB_INDUSTRIAL} do número de packs (lista na aba Envase)"
+        en = f"{n} bulk lots with packaging usage outside ±{TOL_EMB_INDUSTRIAL} of the pack count (listed under Packing)"
+    else:
+        pt = f"{n} lotes de varejo com embalagens fora de ±{TOL_EMB_VAREJO:.0%} do projetado (lista na aba Envase)"
+        en = f"{n} retail lots with packaging usage outside ±{TOL_EMB_VAREJO:.0%} of plan (listed under Packing)"
+    alerta("Atenção", "Embalagem", fab, None, tipo, pt, en, None)
 
 for mp in lotes_mp:
+    f_, p_, l_ = mp["fabrica"], mp["produto"], mp["lote_mp"]
     if mp.get("sem_previsao") and mp["processado"] > 0:
-        alerta("Atenção", "Previsão", mp["fabrica"], mp["produto"], mp["lote_mp"],
-               "Lote de matéria-prima com processamento, mas sem previsão de entrada", mp["entrada"])
-    elif mp["processado"] == 0:
-        alerta("Info", "Previsão", mp["fabrica"], mp["produto"], mp["lote_mp"],
-               f"Previsto ({fmt(mp['previsao'])} un), ainda sem processamento", mp["entrada"])
-    if mp["envasado"] > mp["processado"] - mp["descarte"] + 0.5 and mp["processado"] > 0:
-        alerta("Atenção", "Envasado > processado", mp["fabrica"], mp["produto"], mp["lote_mp"],
-               f"Lote com {fmt(mp['envasado'])} un envasadas para {fmt(mp['processado'] - mp['descarte'])} un aprovadas", mp["entrada"])
+        alerta("Atenção", "Previsão", f_, p_, l_,
+               "Lote de matéria-prima processado sem previsão de entrada",
+               "Raw material lot processed without an intake forecast", mp["entrada"])
+    elif mp["processado"] == 0 and mp["entrada"] <= CORTE - timedelta(days=15):
+        alerta("Info", "Previsão", f_, p_, l_,
+               f"Previsto ({n_pt(mp['previsao'])} un), ainda sem processamento",
+               f"Forecast ({n_en(mp['previsao'])} units), not processed yet", mp["entrada"])
+    if mp["processado"] > 0 and mp["envasado"] > mp["processado"] - mp["descarte"] + 0.5:
+        alerta("Atenção", "Envasado > processado", f_, p_, l_,
+               f"{n_pt(mp['envasado'])} un envasadas para {n_pt(mp['processado'] - mp['descarte'])} un aprovadas",
+               f"{n_en(mp['envasado'])} units packed against {n_en(mp['processado'] - mp['descarte'])} approved", mp["entrada"])
 
 ordem = {"Crítico": 0, "Atenção": 1, "Info": 2}
 alertas.sort(key=lambda a: (ordem[a["nivel"]], a["data"] or "9999"))

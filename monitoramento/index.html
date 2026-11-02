@@ -1,0 +1,636 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Processamento e envase | DemoFoods</title>
+<meta name="description" content="Painel de acompanhamento de processamento e envase em três fábricas, com dados fictícios.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;500;600;700&display=swap">
+<style>
+:root{
+  --bg:#F3F4F5; --surface:#FFFFFF; --sunk:#ECEEF0; --ink:#1E2227; --ink-2:#434A53; --muted:#69727D; --line:#D9DDE1;
+  --accent:#2F6690;
+  --f1:#2F6690; --f2:#B7792B; --f3:#5E7F45;
+  --d-env:#2B4C66; --d-apr:#8DB4D3; --d-ret:#D9A43B; --d-desc:#B3B8BE;
+  --t-var:#2F6690; --t-ind:#B7792B;
+  --p-prev:#C9D6E2; --p-proc:#6F95B6; --p-env:#2B4C66;
+  --crit:#B3261E; --warn:#A86A00; --info:#69727D; --ok:#3F7A3A;
+  --crit-soft:#F7E3E1; --warn-soft:#F6ECD9;
+  color-scheme:light;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#15181B; --surface:#1D2125; --sunk:#252A2F; --ink:#E6E9EC; --ink-2:#C2C8CE; --muted:#929BA5; --line:#30363C;
+  --accent:#7FAED3;
+  --f1:#6E9FC9; --f2:#D49A4E; --f3:#89A96E;
+  --d-env:#7FAED3; --d-apr:#3E6584; --d-ret:#C99232; --d-desc:#59606A;
+  --t-var:#6E9FC9; --t-ind:#D49A4E;
+  --p-prev:#3A4652; --p-proc:#5A82A5; --p-env:#9CC2E2;
+  --crit:#EF8A80; --warn:#E3B04F; --info:#929BA5; --ok:#8CC285;
+  --crit-soft:#3A2321; --warn-soft:#352C1C;
+  color-scheme:dark;
+}}
+:root[data-theme="dark"]{
+  --bg:#15181B; --surface:#1D2125; --sunk:#252A2F; --ink:#E6E9EC; --ink-2:#C2C8CE; --muted:#929BA5; --line:#30363C;
+  --accent:#7FAED3;
+  --f1:#6E9FC9; --f2:#D49A4E; --f3:#89A96E;
+  --d-env:#7FAED3; --d-apr:#3E6584; --d-ret:#C99232; --d-desc:#59606A;
+  --t-var:#6E9FC9; --t-ind:#D49A4E;
+  --p-prev:#3A4652; --p-proc:#5A82A5; --p-env:#9CC2E2;
+  --crit:#EF8A80; --warn:#E3B04F; --info:#929BA5; --ok:#8CC285;
+  --crit-soft:#3A2321; --warn-soft:#352C1C;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--ink);font:400 14px/1.45 "Public Sans",system-ui,-apple-system,"Segoe UI",sans-serif;-webkit-font-smoothing:antialiased}
+.num,td.r,th.r{font-variant-numeric:tabular-nums}
+a{color:var(--accent)}
+button,select,input{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.wrap{max-width:1320px;margin:0 auto;padding:0 20px 48px}
+
+/* aviso de demonstração */
+.demo{background:var(--ink);color:var(--bg);font-size:13px}
+.demo .wrap{display:flex;gap:8px 20px;align-items:center;justify-content:space-between;flex-wrap:wrap;padding-top:8px;padding-bottom:8px}
+.demo a{color:inherit}
+.demo .acts{display:flex;gap:16px;align-items:center}
+.lang{display:inline-flex;border:1px solid color-mix(in srgb,var(--bg) 40%,transparent);border-radius:3px;overflow:hidden}
+.lang button{background:none;border:0;color:inherit;padding:2px 8px;cursor:pointer;font-size:12px;font-weight:600}
+.lang button[aria-pressed="true"]{background:var(--bg);color:var(--ink)}
+
+/* cabeçalho */
+.top{display:flex;flex-wrap:wrap;gap:6px 24px;align-items:flex-end;justify-content:space-between;padding:22px 0 14px}
+.top h1{margin:0;font-size:24px;font-weight:700;letter-spacing:-.01em}
+.top p{margin:2px 0 0;color:var(--muted)}
+.stamp{color:var(--muted);font-size:13px}
+
+/* filtros e abas */
+.bar{position:sticky;top:0;z-index:5;background:var(--bg);border-bottom:1px solid var(--line);padding-top:8px}
+.filters{display:flex;flex-wrap:wrap;gap:10px 14px;align-items:flex-end}
+.f{display:flex;flex-direction:column;gap:3px;min-width:0}
+.f label{font-size:12px;color:var(--muted);font-weight:500}
+select,input[type=date]{background:var(--surface);border:1px solid var(--line);border-radius:3px;padding:0 8px;height:32px;color:var(--ink)}
+select:hover,input[type=date]:hover{border-color:var(--muted)}
+.btn{background:none;border:1px solid var(--line);border-radius:3px;padding:0 12px;height:32px;cursor:pointer;color:var(--ink-2);font-weight:500}
+.btn:hover{border-color:var(--muted);color:var(--ink)}
+.tabs{display:flex;gap:2px;margin-top:10px;overflow-x:auto;scrollbar-width:none}
+.tab{background:none;border:0;border-bottom:2px solid transparent;padding:8px 12px 9px;cursor:pointer;color:var(--muted);font-weight:600;white-space:nowrap}
+.tab:hover{color:var(--ink)}
+.tab[aria-selected="true"]{color:var(--ink);border-bottom-color:var(--accent)}
+.tab .cnt{display:inline-block;margin-left:6px;padding:0 6px;border-radius:2px;background:var(--crit);color:#fff;font-size:11px;line-height:17px;vertical-align:1px}
+
+/* conteúdo */
+.panel{display:grid;gap:18px;padding-top:18px}
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));background:var(--surface);border:1px solid var(--line);border-radius:3px}
+.kpi{padding:12px 16px;border-left:1px solid var(--line);min-width:0}
+.kpi:first-child{border-left:0}
+.kpi .l{font-size:12.5px;color:var(--muted);font-weight:500}
+.kpi .v{font-size:26px;font-weight:600;line-height:1.15;letter-spacing:-.01em;font-variant-numeric:tabular-nums}
+.kpi .v small{font-size:14px;font-weight:500;color:var(--ink-2);margin-left:3px}
+.kpi .s{font-size:12.5px;color:var(--ink-2)}
+.grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(540px,100%),1fr));gap:18px}
+.box{background:var(--surface);border:1px solid var(--line);border-radius:3px;padding:14px 16px 16px;min-width:0}
+.box h2{margin:0;font-size:15px;font-weight:600}
+.box .sub{margin:1px 0 10px;color:var(--muted);font-size:12.5px}
+.legend{display:flex;flex-wrap:wrap;gap:3px 14px;font-size:12.5px;color:var(--ink-2);margin-bottom:6px}
+.legend i{display:inline-block;width:10px;height:10px;border-radius:1px;margin-right:6px;vertical-align:-1px}
+.cv{position:relative;height:270px}
+.cv.tall{height:330px}
+.note{color:var(--muted);font-size:12.5px;margin:0}
+
+/* tabelas */
+.tw{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th{font-size:12px;color:var(--muted);font-weight:600;text-align:left;padding:6px 10px;border-bottom:1px solid var(--line);white-space:nowrap;vertical-align:bottom}
+td{padding:6px 10px;border-bottom:1px solid var(--line);vertical-align:top}
+td.r,th.r{text-align:right;white-space:nowrap}
+th:first-child,td:first-child{padding-left:0}
+tbody tr:last-child td{border-bottom:0}
+tfoot td{font-weight:600;border-top:1px solid var(--ink-2);border-bottom:0}
+td .dot+*,td:has(>span>.dot){white-space:nowrap}
+.dot{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:7px;vertical-align:0}
+.code{letter-spacing:.01em;white-space:nowrap}
+.neg{color:var(--crit)}
+.scroll{max-height:460px;overflow:auto}
+.scroll thead th{position:sticky;top:0;background:var(--surface)}
+
+/* alertas */
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{background:var(--surface);border:1px solid var(--line);border-radius:3px;padding:4px 10px;cursor:pointer;color:var(--ink-2);font-size:13px}
+.chip b{margin-left:6px;color:var(--ink);font-variant-numeric:tabular-nums}
+.chip[aria-pressed="true"]{border-color:var(--accent);color:var(--ink);box-shadow:inset 0 -2px 0 var(--accent)}
+#tbAl td:first-child{padding-left:10px;border-left:3px solid transparent}
+#tbAl tr.crit td:first-child{border-left-color:var(--crit)}
+#tbAl tr.warn td:first-child{border-left-color:var(--warn)}
+#tbAl tr.info td:first-child{border-left-color:var(--line)}
+#tbAl tr.crit{background:color-mix(in srgb,var(--crit-soft) 55%,transparent)}
+#tbAl th:first-child{padding-left:13px}
+.sev{font-weight:600;font-size:12.5px;white-space:nowrap}
+.sev.crit{color:var(--crit)} .sev.warn{color:var(--warn)} .sev.info{color:var(--info)}
+.empty{color:var(--muted);padding:16px 0}
+
+@media (max-width:700px){
+  .wrap{padding-left:16px;padding-right:16px}
+  .top h1{font-size:21px}
+  .kpi{border-left:0;border-top:1px solid var(--line)}
+  .kpi:first-child{border-top:0}
+  .kpi .v{font-size:22px}
+  .cv{height:230px}.cv.tall{height:290px}
+  .f{flex:1 1 140px}
+  .f select,.f input{width:100%}
+}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+</style>
+</head>
+<body>
+<div class="demo">
+  <div class="wrap">
+    <span data-t="aviso"></span>
+    <span class="acts">
+      <span class="lang" role="group" aria-label="Idioma / Language">
+        <button type="button" data-lang="pt">PT</button><button type="button" data-lang="en">EN</button>
+      </span>
+      <a href="../" data-t="voltar"></a>
+    </span>
+  </div>
+</div>
+
+<div class="wrap" style="padding-bottom:0">
+  <header class="top">
+    <div>
+      <h1 data-t="titulo"></h1>
+      <p data-t="subtitulo"></p>
+    </div>
+    <div class="stamp" id="stamp"></div>
+  </header>
+</div>
+
+<div class="bar">
+  <div class="wrap" style="padding-bottom:0">
+    <div class="filters">
+      <div class="f"><label for="fF" data-t="f_fabrica"></label><select id="fF"></select></div>
+      <div class="f"><label for="fP" data-t="f_produto"></label><select id="fP"></select></div>
+      <div class="f"><label for="fC" data-t="f_categoria"></label><select id="fC"></select></div>
+      <div class="f"><label for="fR" data-t="f_periodo"></label><select id="fR"></select></div>
+      <div class="f"><label for="fD1" data-t="f_de"></label><input type="date" id="fD1"></div>
+      <div class="f"><label for="fD2" data-t="f_ate"></label><input type="date" id="fD2"></div>
+      <button class="btn" id="fClear" type="button" data-t="limpar"></button>
+    </div>
+    <nav class="tabs" role="tablist">
+      <button class="tab" role="tab" data-tab="visao" data-t="t_visao"></button>
+      <button class="tab" role="tab" data-tab="proc" data-t="t_proc"></button>
+      <button class="tab" role="tab" data-tab="env" data-t="t_env"></button>
+      <button class="tab" role="tab" data-tab="mp" data-t="t_mp"></button>
+      <button class="tab" role="tab" data-tab="alertas"><span data-t="t_alertas"></span><span class="cnt" id="alCnt"></span></button>
+    </nav>
+  </div>
+</div>
+
+<main class="wrap">
+  <!-- VISÃO GERAL -->
+  <section class="panel" id="p-visao" role="tabpanel">
+    <div class="kpis" id="kVisao"></div>
+    <div class="grid2">
+      <div class="box"><h2 data-t="g_proc_sem"></h2><p class="sub" data-t="g_proc_sem_s"></p>
+        <div class="legend" id="lgF1"></div><div class="cv"><canvas id="chProcSem"></canvas></div></div>
+      <div class="box"><h2 data-t="g_env_sem"></h2><p class="sub" data-t="g_env_sem_s"></p>
+        <div class="legend" id="lgF2"></div><div class="cv"><canvas id="chEnvSem"></canvas></div></div>
+    </div>
+    <div class="box"><h2 data-t="tb_fab"></h2><p class="sub" data-t="tb_fab_s"></p>
+      <div class="tw"><table id="tbFab"></table></div></div>
+  </section>
+
+  <!-- PROCESSAMENTO -->
+  <section class="panel" id="p-proc" role="tabpanel" hidden>
+    <div class="kpis" id="kProc"></div>
+    <div class="box"><h2 data-t="tb_status"></h2><p class="sub" data-t="tb_status_s"></p>
+      <div class="tw"><table id="tbStatus"></table></div></div>
+    <div class="grid2">
+      <div class="box"><h2 data-t="g_dest_prod"></h2><p class="sub" data-t="un_label"></p>
+        <div class="legend" id="lgD1"></div><div class="cv tall"><canvas id="chProd"></canvas></div></div>
+      <div class="box"><h2 data-t="g_cat"></h2><p class="sub" data-t="g_cat_s"></p>
+        <div class="legend" id="lgD2"></div><div class="cv tall"><canvas id="chCat"></canvas></div></div>
+    </div>
+  </section>
+
+  <!-- ENVASE -->
+  <section class="panel" id="p-env" role="tabpanel" hidden>
+    <div class="kpis" id="kEnv"></div>
+    <div class="grid2">
+      <div class="box"><h2 data-t="g_tipo_sem"></h2><p class="sub" data-t="g_env_sem_s"></p>
+        <div class="legend" id="lgT1"></div><div class="cv"><canvas id="chTipo"></canvas></div></div>
+      <div class="box"><h2 data-t="g_emb"></h2><p class="sub" data-t="g_emb_s"></p>
+        <div class="legend" id="lgE"></div><div class="cv"><canvas id="chEmb"></canvas></div></div>
+    </div>
+    <div class="box"><h2 data-t="tb_prod_env"></h2><p class="sub" data-t="tb_prod_env_s"></p>
+      <div class="tw"><table id="tbProdEnv"></table></div></div>
+    <div class="box"><h2 data-t="tb_fora"></h2><p class="sub" id="foraSub"></p>
+      <div class="tw scroll"><table id="tbFora"></table></div><p class="empty" id="foraEmpty" hidden data-t="nada_fora"></p></div>
+  </section>
+
+  <!-- MATÉRIA-PRIMA -->
+  <section class="panel" id="p-mp" role="tabpanel" hidden>
+    <div class="kpis" id="kMp"></div>
+    <div class="grid2">
+      <div class="box"><h2 data-t="g_ppe"></h2><p class="sub" data-t="g_ppe_s"></p>
+        <div class="legend" id="lgPh"></div><div class="cv"><canvas id="chPpe"></canvas></div></div>
+      <div class="box"><h2 data-t="g_fase"></h2><p class="sub" data-t="g_fase_s"></p>
+        <div class="legend" id="lgFase"></div><div class="cv"><canvas id="chFase"></canvas></div></div>
+    </div>
+    <div class="box"><h2 data-t="tb_mp_fab"></h2><p class="sub" data-t="tb_mp_fab_s"></p>
+      <div class="tw"><table id="tbMpFab"></table></div></div>
+    <div class="box"><h2 data-t="tb_mp"></h2><p class="sub" data-t="tb_mp_s"></p>
+      <div class="tw scroll"><table id="tbMp"></table></div></div>
+    <p class="note" data-t="nota_mp"></p>
+  </section>
+
+  <!-- ALERTAS -->
+  <section class="panel" id="p-alertas" role="tabpanel" hidden>
+    <div class="box">
+      <h2 data-t="al_titulo"></h2>
+      <p class="sub" id="alSub"></p>
+      <div class="chips" id="alChips"></div>
+    </div>
+    <div class="box"><div class="tw scroll" style="max-height:620px"><table id="tbAl"></table></div><p class="empty" id="alEmpty" hidden data-t="nada_alerta"></p></div>
+    <p class="note" data-t="nota_al"></p>
+  </section>
+</main>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<script>
+/* ================= textos ================= */
+const TXT = {
+pt:{
+  aviso:"Demonstração com dados fictícios da DemoFoods. Nenhum número aqui representa uma operação real.",
+  voltar:"Voltar ao portfólio",
+  titulo:"Processamento e envase", subtitulo:"Acompanhamento das três fábricas, da matéria-prima ao lote final.",
+  dados_ate:"Dados até {d}",
+  f_fabrica:"Fábrica", f_produto:"Produto", f_categoria:"Categoria", f_periodo:"Período", f_de:"De", f_ate:"Até",
+  todas:"Todas", todos:"Todos", limpar:"Limpar filtros",
+  p_all:"Período todo", p_7:"Últimos 7 dias", p_30:"Últimos 30 dias", p_90:"Últimos 90 dias", p_custom:"Personalizado",
+  t_visao:"Visão geral", t_proc:"Processamento", t_env:"Envase", t_mp:"Matéria-prima", t_alertas:"Alertas",
+  k_proc:"Processado", k_env:"Envasado", k_env_pct:"Processado já envasado", k_apr:"Aprovado, aguardando envase", k_desc:"Descarte",
+  lotes:"lotes", lotes_finais:"lotes finais", do_proc:"do processado", un:"un",
+  g_proc_sem:"Processado por semana", g_proc_sem_s:"unidades, pela data de processamento",
+  g_env_sem:"Envasado por semana", g_env_sem_s:"unidades, pela data inicial do envase",
+  tb_fab:"Resumo por fábrica", tb_fab_s:"processado pelo status atual do lote; envasado pelos lotes finais",
+  c_fabrica:"Fábrica", c_proc_un:"Processado (un)", c_env_un:"Envasado (un)", c_env_pct:"% já envasado", c_apr:"Aguardando envase (un)",
+  c_desc:"Descarte (un)", c_proc_t:"Processado (t)", c_env_t:"Envasado (t)", c_periodo:"Período", total:"Total",
+  tb_status:"Processado por status", tb_status_s:"unidades, pelo status atual de cada lote",
+  c_status:"Status", c_lotes:"Lotes", c_total_un:"Total (un)", c_pct:"%", c_t:"t",
+  g_dest_prod:"Destino do processado por produto", un_label:"unidades",
+  g_cat:"Mix de categorias", g_cat_s:"unidades processadas por categoria",
+  k_total_env:"Total envasado", k_varejo:"Varejo", k_industrial:"Industrial", k_fora:"Embalagem fora da tolerância", k_semlanc:"Sem lançamento de embalagem",
+  packs:"packs", dos_lotes:"dos lotes com lançamento", lotes_sem:"lotes sem embalagens lançadas",
+  g_tipo_sem:"Envasado por semana e tipo", g_emb:"Consumo de embalagem acima do projetado", g_emb_s:"consumidas ÷ projetadas − 1, por item",
+  projetadas:"Projetadas", consumidas:"Consumidas",
+  tb_prod_env:"Envase por produto", tb_prod_env_s:"peso médio por unidade = kg ÷ unidades",
+  c_produto:"Produto", c_var:"Varejo (un)", c_ind:"Industrial (un)", c_packs:"Packs", c_tot:"Total (un)", c_pind:"% industrial", c_env_t2:"Envasado (t)", c_peso:"Peso médio (kg/un)",
+  tb_fora:"Lotes com embalagem fora da tolerância",
+  fora_sub:"Varejo: consumo acima de ±{v} do projetado. Industrial: diferença acima de ±{i} embalagem.",
+  c_lote_final:"Lote final", c_tipo:"Tipo", c_emb:"Embalagem", c_proj:"Projetadas", c_cons:"Consumidas", c_desvio:"Desvio", c_data:"Data",
+  nada_fora:"Nenhum lote fora da tolerância com os filtros atuais.",
+  k_prev:"Previsão", k_mp_proc:"Processado", k_mp_env:"Envasado", k_saldo:"Saldo a envasar", lotes_mp:"lotes de matéria-prima",
+  da_prev:"da previsão", lotes_abertos:"lotes em aberto",
+  g_ppe:"Previsão × processado × envasado", g_ppe_s:"unidades, por fábrica",
+  g_fase:"Lotes de matéria-prima por fase", g_fase_s:"número de lotes",
+  tb_mp_fab:"Resumo por fábrica", tb_mp_fab_s:"processado × previsão só nos lotes com processamento finalizado; envasado × processado só nos lotes finalizados",
+  c_lotes_mp:"Lotes", c_prev:"Previsão", c_procx:"Processado × previsão", c_envx:"Envasado × aprovado",
+  tb_mp:"Lotes de matéria-prima", tb_mp_s:"saldo a envasar = processado − descarte − envasado; lote finalizado mostra a diferença final",
+  c_lote_mp:"Lote", c_fornecedor:"Fornecedor", c_fase:"Fase", c_saldo:"Saldo a envasar", c_dif:"Dif. final", c_entrada:"Entrada",
+  nota_mp:"Esta aba olha o lote de matéria-prima inteiro: os filtros de categoria e período não se aplicam a ela. Quando um lote processado vem de mistura, as unidades são divididas entre os lotes de origem pela proporção da mistura.",
+  al_titulo:"Pontos de atenção", al_sub:"{c} críticos e {a} de atenção. Rendimento: atenção acima de ±{r}, crítico acima de ±{rc}.",
+  c_nivel:"Nível", c_lote:"Lote", c_detalhe:"Detalhe",
+  nada_alerta:"Nenhum alerta com os filtros atuais.",
+  nota_al:"Rendimento = kg envasados do lote (somando todos os lotes finais) ÷ kg processados. Os alertas seguem os filtros de fábrica, produto e período.",
+  sem_dados:"Sem dados para os filtros escolhidos.",
+  erro_dados:"Não foi possível carregar os dados do painel.", erro_graf:"Não foi possível carregar a biblioteca de gráficos.",
+},
+en:{
+  aviso:"Demo with made-up DemoFoods data. None of these numbers come from a real operation.",
+  voltar:"Back to portfolio",
+  titulo:"Processing and packing", subtitulo:"Tracking three plants, from raw material to finished lot.",
+  dados_ate:"Data through {d}",
+  f_fabrica:"Plant", f_produto:"Product", f_categoria:"Grade", f_periodo:"Period", f_de:"From", f_ate:"To",
+  todas:"All", todos:"All", limpar:"Clear filters",
+  p_all:"Whole period", p_7:"Last 7 days", p_30:"Last 30 days", p_90:"Last 90 days", p_custom:"Custom",
+  t_visao:"Overview", t_proc:"Processing", t_env:"Packing", t_mp:"Raw material", t_alertas:"Alerts",
+  k_proc:"Processed", k_env:"Packed", k_env_pct:"Processed and already packed", k_apr:"Approved, waiting to pack", k_desc:"Scrapped",
+  lotes:"lots", lotes_finais:"finished lots", do_proc:"of processed", un:"units",
+  g_proc_sem:"Processed per week", g_proc_sem_s:"units, by processing date",
+  g_env_sem:"Packed per week", g_env_sem_s:"units, by packing start date",
+  tb_fab:"Summary by plant", tb_fab_s:"processed by each lot's current status; packed from finished lots",
+  c_fabrica:"Plant", c_proc_un:"Processed (units)", c_env_un:"Packed (units)", c_env_pct:"% packed", c_apr:"Waiting to pack (units)",
+  c_desc:"Scrapped (units)", c_proc_t:"Processed (t)", c_env_t:"Packed (t)", c_periodo:"Period", total:"Total",
+  tb_status:"Processed by status", tb_status_s:"units, by each lot's current status",
+  c_status:"Status", c_lotes:"Lots", c_total_un:"Total (units)", c_pct:"%", c_t:"t",
+  g_dest_prod:"Where processed output went, by product", un_label:"units",
+  g_cat:"Grade mix", g_cat_s:"processed units by grade",
+  k_total_env:"Total packed", k_varejo:"Retail", k_industrial:"Bulk", k_fora:"Packaging off tolerance", k_semlanc:"Packaging not recorded",
+  packs:"packs", dos_lotes:"of lots with usage recorded", lotes_sem:"lots with no packaging usage",
+  g_tipo_sem:"Packed per week, by type", g_emb:"Packaging used beyond plan", g_emb_s:"used ÷ planned − 1, by item",
+  projetadas:"Planned", consumidas:"Used",
+  tb_prod_env:"Packing by product", tb_prod_env_s:"average weight per unit = kg ÷ units",
+  c_produto:"Product", c_var:"Retail (units)", c_ind:"Bulk (units)", c_packs:"Packs", c_tot:"Total (units)", c_pind:"% bulk", c_env_t2:"Packed (t)", c_peso:"Avg weight (kg/unit)",
+  tb_fora:"Lots with packaging off tolerance",
+  fora_sub:"Retail: usage more than ±{v} off plan. Bulk: difference above ±{i} pack.",
+  c_lote_final:"Finished lot", c_tipo:"Type", c_emb:"Packaging", c_proj:"Planned", c_cons:"Used", c_desvio:"Deviation", c_data:"Date",
+  nada_fora:"No lots off tolerance with the current filters.",
+  k_prev:"Forecast", k_mp_proc:"Processed", k_mp_env:"Packed", k_saldo:"Left to pack", lotes_mp:"raw material lots",
+  da_prev:"of forecast", lotes_abertos:"open lots",
+  g_ppe:"Forecast vs processed vs packed", g_ppe_s:"units, by plant",
+  g_fase:"Raw material lots by stage", g_fase_s:"number of lots",
+  tb_mp_fab:"Summary by plant", tb_mp_fab_s:"processed vs forecast only for lots done processing; packed vs approved only for closed lots",
+  c_lotes_mp:"Lots", c_prev:"Forecast", c_procx:"Processed vs forecast", c_envx:"Packed vs approved",
+  tb_mp:"Raw material lots", tb_mp_s:"left to pack = processed − scrapped − packed; closed lots show the final difference",
+  c_lote_mp:"Lot", c_fornecedor:"Supplier", c_fase:"Stage", c_saldo:"Left to pack", c_dif:"Final diff.", c_entrada:"Intake",
+  nota_mp:"This tab looks at whole raw material lots, so the grade and period filters don't apply. When a processed lot is a blend, its units are split across the source lots by blend share.",
+  al_titulo:"Things to check", al_sub:"{c} critical and {a} warnings. Yield: warning beyond ±{r}, critical beyond ±{rc}.",
+  c_nivel:"Level", c_lote:"Lot", c_detalhe:"Detail",
+  nada_alerta:"No alerts with the current filters.",
+  nota_al:"Yield = kg packed from the lot (across all finished lots) ÷ kg processed. Alerts follow the plant, product and period filters.",
+  sem_dados:"No data for the selected filters.",
+  erro_dados:"The dashboard data could not be loaded.", erro_graf:"The chart library could not be loaded.",
+}};
+/* valores que vêm dos dados */
+const VAL = {
+  en:{
+    "Fábrica 1":"Plant 1","Fábrica 2":"Plant 2","Fábrica 3":"Plant 3",
+    "Envasado":"Packed","Aprovado – não envasado":"Approved, not packed","Em inspeção":"In inspection","Retido":"On hold","Retrabalho":"Rework","Descarte":"Scrapped","(sem status)":"(no status)",
+    "Aprovado, aguardando envase":"Approved, waiting to pack","Em inspeção ou retido":"In inspection or on hold",
+    "Varejo":"Retail","Industrial":"Bulk",
+    "Varejo P":"Retail S","Varejo M":"Retail M","Varejo G":"Retail L","Varejo GG":"Retail XL","Industrial padrão":"Bulk standard","Industrial grande":"Bulk large",
+    "Finalizado":"Closed","Em envase":"Packing","Em processamento":"Processing","Não iniciado":"Not started",
+    "Crítico":"Critical","Atenção":"Warning","Info":"Info",
+    "Status × envase":"Status vs packing","Cadastro":"Master data","Rendimento":"Yield","Sem lote de origem":"No source lot","Qualidade":"Quality",
+    "Sem data de reporte":"No report date","Sem data inicial":"No start date","Peso por unidade":"Weight per unit","Embalagem":"Packaging",
+    "Previsão":"Forecast","Envasado > processado":"Packed > processed",
+    "Fornecedor":"Supplier",
+  }
+};
+
+/* ================= estado e utilidades ================= */
+const $ = id => document.getElementById(id);
+const store = {get(k){try{return localStorage.getItem("dm."+k)}catch(e){return null}}, set(k,v){try{localStorage.setItem("dm."+k,v)}catch(e){}}};
+let LANG = store.get("lang") || ((navigator.language||"").toLowerCase().startsWith("pt") ? "pt" : "en");
+const t = (k,vars) => {let s=(TXT[LANG][k]??TXT.pt[k]??k); if(vars)for(const [a,b] of Object.entries(vars))s=s.replace("{"+a+"}",b); return s;};
+const v = s => s==null ? "" : (LANG==="pt" ? s : (VAL.en[s] ?? (s.startsWith("Fornecedor ")?"Supplier "+s.slice(11):s)));
+let NF0,NF1,NF2;
+function setNumbers(){const loc=LANG==="pt"?"pt-BR":"en-US";NF0=new Intl.NumberFormat(loc,{maximumFractionDigits:0});NF1=new Intl.NumberFormat(loc,{minimumFractionDigits:1,maximumFractionDigits:1});NF2=new Intl.NumberFormat(loc,{minimumFractionDigits:2,maximumFractionDigits:2});}
+const n0 = x => x==null||!isFinite(x) ? "–" : NF0.format(x);
+const n1 = x => x==null||!isFinite(x) ? "–" : NF1.format(x);
+const pc = x => x==null||!isFinite(x) ? "–" : NF1.format(x*100)+"%";
+const pcs = x => x==null||!isFinite(x) ? "–" : (x>0?"+":"")+NF1.format(x*100)+"%";
+const sg = x => x==null ? "–" : (x>0?"+":"")+NF0.format(x);
+const tn = kg => kg/1000;
+const sum = (a,f) => a.reduce((s,x)=>s+(+f(x)||0),0);
+const css = name => getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+const fd = iso => {if(!iso)return "–";const [y,m,d]=iso.split("-");return LANG==="pt"?`${d}/${m}/${y}`:`${m}/${d}/${y}`;};
+const fw = k => {const [,m,d]=k.split("-");return LANG==="pt"?`${d}/${m}`:`${m}/${d}`;};
+
+const STATUS = ["Envasado","Aprovado – não envasado","Em inspeção","Retido","Retrabalho","Descarte","(sem status)"];
+const DEST = [["Envasado","--d-env"],["Aprovado, aguardando envase","--d-apr"],["Em inspeção ou retido","--d-ret"],["Descarte","--d-desc"]];
+const destino = st => st==="Envasado"?"Envasado":st==="Aprovado – não envasado"?"Aprovado, aguardando envase":st==="Descarte"?"Descarte":"Em inspeção ou retido";
+const TIPOS = [["Varejo","--t-var"],["Industrial","--t-ind"]];
+const FASES = [["Finalizado","--d-env"],["Em envase","--d-apr"],["Em processamento","--d-ret"],["Não iniciado","--d-desc"]];
+const NIVEL = {"Crítico":"crit","Atenção":"warn","Info":"info"};
+
+let D, FAB, S;
+
+/* ================= filtros ================= */
+function opt(sel,vals,allLabel,cur){sel.innerHTML="";const o=new Option(allLabel,"");sel.add(o);vals.forEach(x=>sel.add(new Option(v(x),x)));sel.value=cur||"";}
+function fillFilters(){
+  opt($("fF"),FAB,t("todas"),S.f);
+  opt($("fP"),[...new Set(D.lotes_processados.map(r=>r.produto))].sort(),t("todos"),S.p);
+  opt($("fC"),[...new Set(D.lotes_processados.map(r=>r.categoria))].sort(),t("todas"),S.c);
+  const r=$("fR"),cur=r.value||"all";r.innerHTML="";[["all","p_all"],["7","p_7"],["30","p_30"],["90","p_90"],["custom","p_custom"]].forEach(([k,l])=>r.add(new Option(t(l),k)));r.value=cur;
+}
+function initFilters(){
+  [$("fD1"),$("fD2")].forEach(i=>{i.min=D.meta.inicio;i.max=D.meta.fim;});
+  $("fD1").value=S.d1;$("fD2").value=S.d2;
+  $("fF").onchange=e=>{S.f=e.target.value;render()};
+  $("fP").onchange=e=>{S.p=e.target.value;render()};
+  $("fC").onchange=e=>{S.c=e.target.value;render()};
+  $("fR").onchange=e=>{const x=e.target.value;if(x==="all"){S.d1=D.meta.inicio;S.d2=D.meta.fim;}else if(x!=="custom"){const end=new Date(D.meta.fim+"T00:00:00");end.setDate(end.getDate()-(+x)+1);S.d1=end.toISOString().slice(0,10);S.d2=D.meta.fim;}$("fD1").value=S.d1;$("fD2").value=S.d2;render();};
+  $("fD1").onchange=e=>{S.d1=e.target.value||D.meta.inicio;$("fR").value="custom";render()};
+  $("fD2").onchange=e=>{S.d2=e.target.value||D.meta.fim;$("fR").value="custom";render()};
+  $("fClear").onclick=()=>{S.f=S.p=S.c="";S.d1=D.meta.inicio;S.d2=D.meta.fim;$("fF").value=$("fP").value=$("fC").value="";$("fR").value="all";$("fD1").value=S.d1;$("fD2").value=S.d2;render();};
+}
+const inR = d => d && d>=S.d1 && d<=S.d2;
+const base = r => (!S.f||r.fabrica===S.f)&&(!S.p||r.produto===S.p)&&(!S.c||r.categoria===S.c);
+const fProc = () => D.lotes_processados.filter(r=>base(r)&&inR(r.data));
+const fEnv = () => D.lotes_finais.filter(r=>base(r)&&inR(r.data_inicial));
+const fMp = () => D.lotes_mp.filter(r=>(!S.f||r.fabrica===S.f)&&(!S.p||r.produto===S.p));
+const fAl = () => D.alertas.filter(a=>(!S.f||a.fabrica===S.f)&&(!S.p||!a.produto||a.produto===S.p)&&(!a.data||inR(a.data)));
+const fabs = () => S.f?[S.f]:FAB;
+const FCOL = f => "--f"+(FAB.indexOf(f)+1);
+
+/* ================= gráficos ================= */
+const CH = {};
+const VALS = {id:"vals",afterDatasetsDraw(ch){
+  const o=ch.options.plugins.vals||{};if(!o.on)return;
+  const ctx=ch.ctx,hz=ch.options.indexAxis==="y",F=o.fmt==="pct"?pcs:n0;ctx.save();ctx.font="600 11px "+css("--ff");ctx.fillStyle=css("--ink");
+  if(o.grouped){ch.data.datasets.forEach((ds,i)=>{if(!ch.isDatasetVisible(i))return;ch.getDatasetMeta(i).data.forEach((el,j)=>{const x=ds.data[j];if(!x)return;const p=el.getProps(["x","y","width"],true);const s=F(x),w=ctx.measureText(s).width;
+      if(w<=p.width+4){ctx.textAlign="center";ctx.textBaseline="bottom";ctx.fillText(s,p.x,p.y-3);}else{ctx.save();ctx.translate(p.x,p.y-4);ctx.rotate(-Math.PI/2);ctx.textAlign="left";ctx.textBaseline="middle";ctx.fillText(s,0,0);ctx.restore();}});});ctx.restore();return;}
+  ch.data.labels.forEach((_,j)=>{let tot=0,edge=null,pos=null;
+    ch.data.datasets.forEach((ds,i)=>{if(!ch.isDatasetVisible(i))return;const x=ds.data[j];if(!x)return;tot+=x;const p=ch.getDatasetMeta(i).data[j].getProps(["x","y"],true);
+      if(hz){if(edge===null||p.x>edge){edge=p.x;pos=p.y;}}else{if(edge===null||p.y<edge){edge=p.y;pos=p.x;}}});
+    if(!tot)return;const s=F(tot),w=ctx.measureText(s).width;
+    if(hz){ctx.textAlign="left";ctx.textBaseline="middle";ctx.fillText(s,edge+5,pos);}
+    else{const slot=ch.chartArea.width/ch.data.labels.length;if(w<=slot-2){ctx.textAlign="center";ctx.textBaseline="bottom";ctx.fillText(s,pos,edge-3);}
+      else{ctx.save();ctx.translate(pos,edge-4);ctx.rotate(-Math.PI/2);ctx.textAlign="left";ctx.textBaseline="middle";ctx.fillText(s,0,0);ctx.restore();}}});
+  ctx.restore();}};
+function chart(id,cfg,unit){if(CH[id])CH[id].destroy();CH[id]=new Chart($(id),cfg);CH[id].$unit=unit||"";}
+function opts(extra){
+  const line=css("--line"),muted=css("--muted");
+  Chart.defaults.font.family=css("--ff");Chart.defaults.font.size=12;Chart.defaults.color=css("--ink-2");
+  return Object.assign({responsive:true,maintainAspectRatio:false,animation:{duration:200},interaction:{mode:"index",intersect:false},
+    layout:{padding:{top:22,right:6}},
+    plugins:{vals:{on:true},legend:{display:false},tooltip:{animation:{duration:0},backgroundColor:css("--ink"),titleColor:css("--surface"),bodyColor:css("--surface"),cornerRadius:2,padding:9,boxWidth:9,boxHeight:9,
+      callbacks:{label:c=>" "+c.dataset.label+": "+n0(c.parsed[c.chart.options.indexAxis==="y"?"x":"y"])+(c.chart.$unit?" "+c.chart.$unit:"")}}},
+    scales:{x:{grid:{display:false},border:{color:line},ticks:{color:muted}},y:{beginAtZero:true,grid:{color:line},border:{display:false},ticks:{color:muted,callback:x=>n0(x)}}}},extra||{});
+}
+function hopts(){const o=opts({indexAxis:"y"});o.layout={padding:{top:2,right:58}};o.scales.x={stacked:true,beginAtZero:true,grid:{color:css("--line")},border:{display:false},ticks:{color:css("--muted"),callback:x=>n0(x)}};o.scales.y={stacked:true,grid:{display:false},ticks:{color:css("--ink-2"),autoSkip:false}};return o;}
+function stacked(o){o.scales.x.stacked=o.scales.y.stacked=true;return o;}
+/* série semanal: com muitas semanas, número em cada barra vira ruído; o valor fica no tooltip */
+function weekly(o){stacked(o);const n=weeks(S.d1,S.d2).length;o.plugins.vals.on=n<=10;o.layout.padding.top=n<=10?22:6;o.scales.x.ticks.maxRotation=n>14?60:0;return o;}
+function ds(label,data,col,thick){return{label,data,backgroundColor:css(col),borderWidth:0,borderRadius:1,maxBarThickness:thick||40};}
+function legend(id,items){const el=$(id);el.innerHTML="";items.forEach(([lab,col])=>{const s=document.createElement("span");const i=document.createElement("i");i.style.background=css(col);s.append(i,v(lab));el.appendChild(s);});}
+function wkey(iso){const d=new Date(iso+"T00:00:00");d.setDate(d.getDate()-((d.getDay()+6)%7));return d.toISOString().slice(0,10);}
+function weeks(a,b){const out=[];let k=wkey(a);const e=wkey(b);while(k<=e){out.push(k);const d=new Date(k+"T00:00:00");d.setDate(d.getDate()+7);k=d.toISOString().slice(0,10);}return out;}
+function byWeek(rows,dateF,grpF,valF,grps,wk){const m={};grps.forEach(g=>m[g]=Object.fromEntries(wk.map(k=>[k,0])));rows.forEach(r=>{const d=dateF(r);if(!d)return;const k=wkey(d),g=grpF(r);if(m[g]&&k in m[g])m[g][k]+=valF(r);});return m;}
+
+/* ================= blocos ================= */
+function kpis(id,list){const el=$(id);el.innerHTML="";list.forEach(([l,val,u,s])=>{const d=document.createElement("div");d.className="kpi";
+  d.innerHTML=`<div class="l"></div><div class="v"></div><div class="s"></div>`;d.children[0].textContent=l;d.children[1].textContent=val;if(u){const sm=document.createElement("small");sm.textContent=u;d.children[1].appendChild(sm);}d.children[2].textContent=s||" ";el.appendChild(d);});}
+function table(id,head,rows,foot){const tb=$(id);tb.innerHTML="";const hr=tb.createTHead().insertRow();head.forEach(([h,r])=>{const th=document.createElement("th");th.textContent=h;if(r)th.className="r";hr.appendChild(th);});
+  const body=tb.createTBody();rows.forEach(row=>{const tr=body.insertRow();if(row.cls)tr.className=row.cls;(row.cells||row).forEach((c,i)=>{const td=tr.insertCell();if(head[i]&&head[i][1])td.className="r";if(c&&c.node)td.appendChild(c.node);else td.textContent=c;if(c&&c.cls)td.classList.add(c.cls);});});
+  if(foot){const tf=tb.createTFoot().insertRow();foot.forEach((c,i)=>{const td=tf.insertCell();if(head[i]&&head[i][1])td.className="r";td.textContent=c;});}}
+function dot(text,col){const s=document.createElement("span");const i=document.createElement("span");i.className="dot";i.style.background=css(col);s.append(i,document.createTextNode(text));return{node:s};}
+function code(text){const s=document.createElement("span");s.className="code";s.textContent=text||"–";return{node:s};}
+
+/* ================= visão geral ================= */
+function rVisao(){
+  const P=fProc(),E=fEnv();
+  const un=sum(P,r=>r.un),kg=sum(P,r=>r.kg),unE=sum(E,r=>r.un),kgE=sum(E,r=>r.kg);
+  const st=x=>sum(P.filter(r=>r.status===x),r=>r.un);
+  const env=st("Envasado"),apr=st("Aprovado – não envasado"),desc=st("Descarte");
+  kpis("kVisao",[
+    [t("k_proc"),n0(un),t("un"),n1(tn(kg))+" t, "+n0(P.length)+" "+t("lotes")],
+    [t("k_env"),n0(unE),t("un"),n1(tn(kgE))+" t, "+n0(E.length)+" "+t("lotes_finais")],
+    [t("k_env_pct"),pc(env/un),"",n0(env)+" "+t("un")],
+    [t("k_apr"),n0(apr),t("un"),pc(apr/un)+" "+t("do_proc")],
+    [t("k_desc"),n0(desc),t("un"),pc(desc/un)+" "+t("do_proc")],
+  ]);
+  const wk=weeks(S.d1,S.d2),fs=fabs();
+  legend("lgF1",fs.map(f=>[f,FCOL(f)]));legend("lgF2",fs.map(f=>[f,FCOL(f)]));
+  const mp=byWeek(P,r=>r.data,r=>r.fabrica,r=>r.un,fs,wk),me=byWeek(E,r=>r.data_inicial,r=>r.fabrica,r=>r.un,fs,wk);
+  chart("chProcSem",{type:"bar",data:{labels:wk.map(fw),datasets:fs.map(f=>ds(v(f),wk.map(k=>mp[f][k]),FCOL(f)))},options:weekly(opts())},t("un"));
+  chart("chEnvSem",{type:"bar",data:{labels:wk.map(fw),datasets:fs.map(f=>ds(v(f),wk.map(k=>me[f][k]),FCOL(f)))},options:weekly(opts())},t("un"));
+  const linha=(p,e)=>{const u=sum(p,r=>r.un),q=x=>sum(p.filter(r=>r.status===x),r=>r.un);
+    return[n0(u),n0(sum(e,r=>r.un)),pc(q("Envasado")/u),n0(q("Aprovado – não envasado")),n0(q("Descarte")),n1(tn(sum(p,r=>r.kg))),n1(tn(sum(e,r=>r.kg)))];};
+  const rows=fs.map(f=>{const p=P.filter(r=>r.fabrica===f),e=E.filter(r=>r.fabrica===f);const ds_=p.map(r=>r.data).sort();
+    return[dot(v(f),FCOL(f))].concat(linha(p,e),[ds_.length?fd(ds_[0])+" – "+fd(ds_[ds_.length-1]):"–"]);});
+  table("tbFab",[[t("c_fabrica")],[t("c_proc_un"),1],[t("c_env_un"),1],[t("c_env_pct"),1],[t("c_apr"),1],[t("c_desc"),1],[t("c_proc_t"),1],[t("c_env_t"),1],[t("c_periodo"),1]],rows,
+    fs.length>1?[t("total")].concat(linha(P,E),[""]):null);
+}
+
+/* ================= processamento ================= */
+function rProc(){
+  const P=fProc(),un=sum(P,r=>r.un),fs=fabs();
+  const by=d=>sum(P.filter(r=>destino(r.status)===d),r=>r.un);
+  kpis("kProc",[[t("k_proc"),n0(un),t("un"),n1(tn(sum(P,r=>r.kg)))+" t, "+n0(P.length)+" "+t("lotes")]].concat(DEST.map(([d])=>[v(d),n0(by(d)),t("un"),pc(by(d)/un)])));
+  const sts=STATUS.filter(x=>P.some(r=>(r.status||"(sem status)")===x));
+  const rows=sts.map(x=>{const p=P.filter(r=>(r.status||"(sem status)")===x),u=sum(p,r=>r.un);
+    return[v(x)].concat(fs.map(f=>{const q=sum(p.filter(r=>r.fabrica===f),r=>r.un);return q?n0(q):"–";}),[n0(p.length),n0(u),pc(u/un),n1(tn(sum(p,r=>r.kg)))]);});
+  table("tbStatus",[[t("c_status")]].concat(fs.map(f=>[v(f),1]),[[t("c_lotes"),1],[t("c_total_un"),1],[t("c_pct"),1],[t("c_t"),1]]),rows,
+    [t("total")].concat(fs.map(f=>n0(sum(P.filter(r=>r.fabrica===f),r=>r.un))),[n0(P.length),n0(un),"100%",n1(tn(sum(P,r=>r.kg)))]));
+  const prods=[...new Set(P.map(r=>r.produto))].sort((a,b)=>sum(P.filter(r=>r.produto===b),r=>r.un)-sum(P.filter(r=>r.produto===a),r=>r.un));
+  legend("lgD1",DEST);legend("lgD2",DEST);
+  chart("chProd",{type:"bar",data:{labels:prods,datasets:DEST.map(([d,c])=>ds(v(d),prods.map(p=>sum(P.filter(r=>r.produto===p&&destino(r.status)===d),r=>r.un)),c,26))},options:hopts()},t("un"));
+  const cats=[...new Set(P.map(r=>r.categoria))].sort();
+  chart("chCat",{type:"bar",data:{labels:cats,datasets:DEST.map(([d,c])=>ds(v(d),cats.map(k=>sum(P.filter(r=>r.categoria===k&&destino(r.status)===d),r=>r.un)),c,56))},options:stacked(opts())},t("un"));
+}
+
+/* ================= envase ================= */
+function rEnv(){
+  const E=fEnv(),fs=fabs();
+  const u=sum(E,r=>r.un),var_=E.filter(r=>r.tipo==="Varejo"),ind=E.filter(r=>r.tipo==="Industrial");
+  const comLanc=E.filter(r=>r.status_emb!=="Sem lançamento"),fora=E.filter(r=>r.status_emb==="Fora"),sem=E.filter(r=>r.status_emb==="Sem lançamento");
+  kpis("kEnv",[
+    [t("k_total_env"),n0(u),t("un"),n1(tn(sum(E,r=>r.kg)))+" t, "+n0(E.length)+" "+t("lotes_finais")],
+    [v("Varejo"),n0(sum(var_,r=>r.un)),t("un"),pc(sum(var_,r=>r.un)/u)],
+    [v("Industrial"),n0(sum(ind,r=>r.un)),t("un"),n0(sum(ind,r=>r.packs))+" "+t("packs")+", "+pc(sum(ind,r=>r.un)/u)],
+    [t("k_fora"),n0(fora.length),t("lotes"),pc(fora.length/comLanc.length)+" "+t("dos_lotes")],
+    [t("k_semlanc"),n0(sem.length),t("lotes"),""],
+  ]);
+  const wk=weeks(S.d1,S.d2);legend("lgT1",TIPOS);
+  const m=byWeek(E,r=>r.data_inicial,r=>r.tipo,r=>r.un,["Varejo","Industrial"],wk);
+  chart("chTipo",{type:"bar",data:{labels:wk.map(fw),datasets:TIPOS.map(([tp,c])=>ds(v(tp),wk.map(k=>m[tp][k]),c))},options:weekly(opts())},t("un"));
+  const itens=["Varejo P","Varejo M","Varejo G","Varejo GG","Industrial padrão","Industrial grande"].filter(i=>comLanc.some(r=>r.embalagem===i));
+  legend("lgE",TIPOS);
+  const dev=itens.map(i=>{const g=comLanc.filter(r=>r.embalagem===i);return sum(g,r=>r.emb_consumidas)/sum(g,r=>r.emb_projetadas)-1;});
+  const oe=opts();oe.plugins.vals.fmt="pct";oe.scales.y.ticks.callback=x=>NF1.format(x*100)+"%";oe.scales.y.beginAtZero=true;
+  oe.plugins.tooltip.callbacks.label=c=>" "+pcs(c.parsed.y);oe.scales.x.ticks.maxRotation=0;oe.scales.x.ticks.autoSkip=false;
+  chart("chEmb",{type:"bar",data:{labels:itens.map(i=>v(i).split(" ")),datasets:[{label:t("c_desvio"),data:dev,borderWidth:0,borderRadius:1,maxBarThickness:46,
+    backgroundColor:itens.map(i=>css(i.startsWith("Industrial")?"--t-ind":"--t-var"))}]},options:oe});
+  const linha=e=>{const vv=sum(e.filter(r=>r.tipo==="Varejo"),r=>r.un),ii=sum(e.filter(r=>r.tipo==="Industrial"),r=>r.un),kg=sum(e,r=>r.kg);
+    return[n0(e.length),n0(vv),n0(ii),n0(sum(e,r=>r.packs)),n0(vv+ii),pc(ii/(vv+ii)),n1(tn(kg)),NF2.format(kg/(vv+ii))];};
+  const prods=[...new Set(E.map(r=>r.produto))].sort();
+  table("tbProdEnv",[[t("c_produto")],[t("c_lotes"),1],[t("c_var"),1],[t("c_ind"),1],[t("c_packs"),1],[t("c_tot"),1],[t("c_pind"),1],[t("c_env_t2"),1],[t("c_peso"),1]],
+    prods.map(p=>[p].concat(linha(E.filter(r=>r.produto===p)))),E.length?[t("total")].concat(linha(E)):null);
+  $("foraSub").textContent=t("fora_sub",{v:Math.round(D.meta.regras.tol_emb_varejo*100)+"%",i:D.meta.regras.tol_emb_industrial});
+  const F=[...fora].sort((a,b)=>Math.abs(b.desvio_emb)-Math.abs(a.desvio_emb));
+  table("tbFora",[[t("c_lote_final")],[t("c_fabrica")],[t("c_produto")],[t("c_tipo")],[t("c_emb")],[t("c_proj"),1],[t("c_cons"),1],[t("c_desvio"),1],[t("c_data"),1]],
+    F.map(r=>[code(r.lote_final),dot(v(r.fabrica),FCOL(r.fabrica)),r.produto,v(r.tipo),v(r.embalagem),n0(r.emb_projetadas),n0(r.emb_consumidas),
+      r.tipo==="Industrial"?sg(r.emb_consumidas-r.emb_projetadas):pcs(r.desvio_emb),fd(r.data_inicial)]));
+  $("foraEmpty").hidden=F.length>0;$("tbFora").hidden=!F.length;
+}
+
+/* ================= matéria-prima ================= */
+function rMp(){
+  const L=fMp(),fs=fabs();
+  const prev=sum(L,r=>r.previsao),proc=sum(L,r=>r.processado),env=sum(L,r=>r.envasado),desc=sum(L,r=>r.descarte),saldo=sum(L,r=>r.saldo);
+  const abertos=L.filter(r=>r.fase!=="Finalizado"&&r.processado>0);
+  kpis("kMp",[
+    [t("k_prev"),n0(prev),t("un"),n0(L.length)+" "+t("lotes_mp")],
+    [t("k_mp_proc"),n0(proc),t("un"),pc(proc/prev)+" "+t("da_prev")],
+    [t("k_mp_env"),n0(env),t("un"),pc(env/(proc-desc))+" "+(LANG==="pt"?"do aprovado":"of approved")],
+    [t("k_saldo"),n0(saldo),t("un"),n0(abertos.length)+" "+t("lotes_abertos")],
+    [t("k_desc"),n0(desc),t("un"),pc(desc/proc)+" "+t("do_proc")],
+  ]);
+  const PH=[["k_prev","--p-prev","previsao"],["k_mp_proc","--p-proc","processado"],["k_mp_env","--p-env","envasado"]];
+  legend("lgPh",PH.map(([k,c])=>[t(k),c]));
+  const og=opts();og.plugins.vals.grouped=true;og.layout.padding.top=24;
+  chart("chPpe",{type:"bar",data:{labels:fs.map(v),datasets:PH.map(([k,c,f])=>ds(t(k),fs.map(x=>sum(L.filter(r=>r.fabrica===x),r=>r[f])),c,52))},options:og},t("un"));
+  const fz=FASES.filter(([f])=>L.some(r=>r.fase===f));legend("lgFase",fz);
+  const oh=hopts();oh.scales.x.ticks.precision=0;
+  chart("chFase",{type:"bar",data:{labels:fs.map(v),datasets:fz.map(([f,c])=>ds(v(f),fs.map(x=>L.filter(r=>r.fabrica===x&&r.fase===f).length||null),c,34))},options:oh},t("lotes"));
+  const rel=(a,b)=>b?pcs(a/b-1):"–";
+  const linha=l=>{const pf=l.filter(r=>r.sit_processamento==="Finalizado"&&r.previsao),ef=l.filter(r=>r.fase==="Finalizado");
+    return[n0(l.length),n0(sum(l,r=>r.previsao)),n0(sum(l,r=>r.processado)),n0(sum(l,r=>r.envasado)),rel(sum(pf,r=>r.processado),sum(pf,r=>r.previsao)),rel(sum(ef,r=>r.envasado),sum(ef,r=>r.processado-r.descarte)),n0(sum(l,r=>r.saldo)),n0(sum(l,r=>r.descarte))];};
+  const H=[[t("c_lotes_mp"),1],[t("c_prev"),1],[t("k_mp_proc"),1],[t("k_mp_env"),1],[t("c_procx"),1],[t("c_envx"),1],[t("c_saldo"),1],[t("k_desc"),1]];
+  table("tbMpFab",[[t("c_fabrica")]].concat(H),fs.map(f=>[dot(v(f),FCOL(f))].concat(linha(L.filter(r=>r.fabrica===f)))),fs.length>1?[t("total")].concat(linha(L)):null);
+  const ord={"Em envase":0,"Em processamento":1,"Não iniciado":2,"Finalizado":3};
+  const LL=[...L].sort((a,b)=>a.fabrica.localeCompare(b.fabrica)||ord[a.fase]-ord[b.fase]||(b.saldo||0)-(a.saldo||0));
+  const fcol=f=>(FASES.find(x=>x[0]===f)||FASES[3])[1];
+  table("tbMp",[[t("c_lote_mp")],[t("c_fornecedor")],[t("c_produto")],[t("c_fabrica")],[t("c_fase")],[t("c_entrada"),1],[t("c_prev"),1],[t("k_mp_proc"),1],[t("k_mp_env"),1],[t("c_saldo"),1],[t("c_dif"),1],[t("k_desc"),1]],
+    LL.map(r=>[code(r.lote_mp),v(r.fornecedor),r.produto,v(r.fabrica),dot(v(r.fase),fcol(r.fase)),fd(r.entrada),r.previsao==null?"–":n0(r.previsao),n0(r.processado),n0(r.envasado),
+      r.fase==="Finalizado"||r.fase==="Não iniciado"?"–":n0(r.saldo),r.dif_final==null?"–":{node:Object.assign(document.createElement("span"),{textContent:sg(r.dif_final),className:r.dif_final<0?"neg":""})},r.descarte?n0(r.descarte):"–"]));
+}
+
+/* ================= alertas ================= */
+function rAlertas(){
+  const A=fAl();
+  $("alCnt").textContent=A.filter(a=>a.nivel!=="Info").length||"";
+  if(S.tab!=="alertas")return;
+  const tipos={};A.forEach(a=>{tipos[a.tipo]=(tipos[a.tipo]||0)+1;});
+  const ch=$("alChips");ch.innerHTML="";
+  [["",A.length,LANG==="pt"?"Todos":"All"]].concat(Object.entries(tipos).sort((a,b)=>b[1]-a[1]).map(([k,n])=>[k,n,v(k)])).forEach(([k,n,l])=>{
+    const b=document.createElement("button");b.type="button";b.className="chip";b.setAttribute("aria-pressed",S.al===k);b.append(l);const bb=document.createElement("b");bb.textContent=n;b.appendChild(bb);b.onclick=()=>{S.al=k;rAlertas();};ch.appendChild(b);});
+  const r=D.meta.regras;
+  $("alSub").textContent=t("al_sub",{c:A.filter(a=>a.nivel==="Crítico").length,a:A.filter(a=>a.nivel==="Atenção").length,r:Math.round(r.tol_rendimento*100)+"%",rc:Math.round(r.tol_rendimento_critico*100)+"%"});
+  const ordem={"Crítico":0,"Atenção":1,"Info":2};
+  const L=A.filter(a=>!S.al||a.tipo===S.al).sort((a,b)=>ordem[a.nivel]-ordem[b.nivel]||(b.data||"").localeCompare(a.data||""));
+  table("tbAl",[[t("c_nivel")],[t("c_tipo")],[t("c_fabrica")],[t("c_lote")],[t("c_produto")],[t("c_detalhe")],[t("c_data"),1]],
+    L.map(a=>{const s=document.createElement("span");s.className="sev "+NIVEL[a.nivel];s.textContent=v(a.nivel);
+      return{cls:NIVEL[a.nivel],cells:[{node:s},v(a.tipo),dot(v(a.fabrica),FCOL(a.fabrica)),code(v(a.lote)),a.produto||"–",a.detalhe[LANG]||a.detalhe.pt,fd(a.data)]};}));
+  $("alEmpty").hidden=L.length>0;$("tbAl").hidden=!L.length;
+}
+
+/* ================= idioma, abas, render ================= */
+function applyLang(){
+  document.documentElement.lang=LANG==="pt"?"pt-BR":"en";setNumbers();
+  document.title=t("titulo")+" | DemoFoods";
+  document.querySelectorAll("[data-t]").forEach(el=>el.textContent=t(el.dataset.t));
+  document.querySelectorAll(".lang button").forEach(b=>b.setAttribute("aria-pressed",b.dataset.lang===LANG));
+  $("stamp").textContent=t("dados_ate",{d:fd(D?D.meta.fim:"")});
+  if(D){fillFilters();render();}
+}
+function setTab(tab){S.tab=tab;store.set("tab",tab);document.querySelectorAll(".tab").forEach(b=>b.setAttribute("aria-selected",b.dataset.tab===tab));document.querySelectorAll("[role=tabpanel]").forEach(p=>p.hidden=p.id!=="p-"+tab);render();}
+function render(){
+  if(typeof Chart==="undefined"){fail(t("erro_graf"));return;}
+  rAlertas();({visao:rVisao,proc:rProc,env:rEnv,mp:rMp,alertas:()=>{}})[S.tab]();
+}
+function fail(msg){const p=document.createElement("p");p.className="empty";p.textContent=msg;document.querySelector("main").prepend(p);}
+
+document.querySelectorAll(".lang button").forEach(b=>b.onclick=()=>{LANG=b.dataset.lang;store.set("lang",LANG);applyLang();});
+document.querySelectorAll(".tab").forEach(b=>b.onclick=()=>{setTab(b.dataset.tab);try{history.replaceState(null,"","#"+b.dataset.tab)}catch(e){}});
+document.documentElement.style.setProperty("--ff",'"Public Sans",system-ui,sans-serif');
+if(window.Chart)Chart.register(VALS);
+try{matchMedia("(prefers-color-scheme: dark)").addEventListener("change",()=>D&&render());}catch(e){}
+
+(async()=>{
+  applyLang();
+  try{D=window.__DADOS__||await (await fetch("../dados/monitoramento.json")).json();}catch(e){fail(t("erro_dados"));return;}
+  FAB=D.fabricas;S={f:"",p:"",c:"",d1:D.meta.inicio,d2:D.meta.fim,tab:"visao",al:""};
+  initFilters();applyLang();
+  const h=(location.hash||"").slice(1);
+  setTab(["visao","proc","env","mp","alertas"].includes(h)?h:(store.get("tab")||"visao"));
+})();
+</script>
+</body>
+</html>
