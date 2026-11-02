@@ -1,0 +1,410 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Central de automações | DemoFoods</title>
+<meta name="description" content="Réplica clicável de um aplicativo desktop que reúne 16 automações de lançamento em ERP, com execução simulada.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;500;600;700&display=swap">
+<style>
+/* página: mesmos tokens das outras demos. janela: as cores do aplicativo original. */
+:root{
+  --bg:#F3F4F5; --surface:#FFFFFF; --sunk:#ECEEF0; --ink:#1E2227; --ink-2:#434A53; --muted:#69727D; --line:#D9DDE1;
+  --accent:#2F6690; --ok:#3F7A3A;
+  /* aplicativo */
+  --a-bg:#F3F6F8; --a-side:#0B1A2A; --a-side-2:#122638; --a-side-tx:#C7D2DE; --a-side-mut:#7F92A6;
+  --a-card:#FFFFFF; --a-card-2:#F8FAFC; --a-line:#D8E1E8; --a-tx:#132238; --a-tx-2:#64748B; --a-acc:#0F766E; --a-acc-h:#0B5F59;
+  --a-ok-bg:#DCFCE7; --a-ok:#15803D; --a-run-bg:#FEF3C7; --a-run:#A16207; --a-err-bg:#FEE2E2; --a-err:#B91C1C; --a-neu-bg:#EAF0F4; --a-neu:#475569;
+  --a-log:#0D1B2A; --a-log-tx:#D6E0EA; --a-log-mut:#7F92A6;
+  color-scheme:light;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#15181B; --surface:#1D2125; --sunk:#252A2F; --ink:#E6E9EC; --ink-2:#C2C8CE; --muted:#929BA5; --line:#30363C;
+  --accent:#7FAED3; --ok:#8CC285;
+  --a-bg:#1A222B; --a-card:#212B35; --a-card-2:#26313C; --a-line:#33404D; --a-tx:#E2E8EE; --a-tx-2:#9AA9B8; --a-acc:#2BA394; --a-acc-h:#33B5A5;
+  --a-ok-bg:#1C3A27; --a-ok:#7DDB9B; --a-run-bg:#3B3218; --a-run:#F2C14E; --a-err-bg:#3D2121; --a-err:#F59A9A; --a-neu-bg:#2A3642; --a-neu:#B4C2CF;
+  color-scheme:dark;
+}}
+:root[data-theme="dark"]{
+  --bg:#15181B; --surface:#1D2125; --sunk:#252A2F; --ink:#E6E9EC; --ink-2:#C2C8CE; --muted:#929BA5; --line:#30363C;
+  --accent:#7FAED3; --ok:#8CC285;
+  --a-bg:#1A222B; --a-card:#212B35; --a-card-2:#26313C; --a-line:#33404D; --a-tx:#E2E8EE; --a-tx-2:#9AA9B8; --a-acc:#2BA394; --a-acc-h:#33B5A5;
+  --a-ok-bg:#1C3A27; --a-ok:#7DDB9B; --a-run-bg:#3B3218; --a-run:#F2C14E; --a-err-bg:#3D2121; --a-err:#F59A9A; --a-neu-bg:#2A3642; --a-neu:#B4C2CF;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+body{margin:0;background:var(--bg);color:var(--ink);font:400 14px/1.45 "Public Sans",system-ui,-apple-system,"Segoe UI",sans-serif;-webkit-font-smoothing:antialiased}
+.n{font-variant-numeric:tabular-nums}
+a{color:var(--accent)}
+button{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.wrap{max-width:1240px;margin:0 auto;padding:0 20px}
+
+.demo{background:var(--ink);color:var(--bg);font-size:13px}
+.demo .wrap{display:flex;gap:8px 20px;align-items:center;justify-content:space-between;flex-wrap:wrap;padding-top:8px;padding-bottom:8px}
+.demo a{color:inherit}
+.demo .acts{display:flex;gap:16px;align-items:center}
+.lang{display:inline-flex;border:1px solid color-mix(in srgb,var(--bg) 40%,transparent);border-radius:3px;overflow:hidden}
+.lang button{background:none;border:0;color:inherit;padding:2px 8px;cursor:pointer;font-size:12px;font-weight:600}
+.lang button[aria-pressed="true"]{background:var(--bg);color:var(--ink)}
+
+.top{padding:22px 0 18px}
+.top h1{margin:0;font-size:24px;font-weight:700;letter-spacing:-.01em}
+.top p{margin:3px 0 0;color:var(--ink-2);max-width:78ch}
+
+/* ===== janela do aplicativo ===== */
+.win{border:1px solid var(--line);border-radius:8px;overflow:hidden;background:var(--a-bg);box-shadow:0 18px 40px -28px rgba(10,20,30,.45)}
+.titlebar{display:flex;align-items:center;justify-content:space-between;height:30px;padding:0 12px;background:var(--a-side-2);color:var(--a-side-mut);font-size:12px}
+.titlebar .ctl{display:flex;gap:14px;font-size:13px;letter-spacing:.05em}
+.app{display:grid;grid-template-columns:232px 1fr;min-height:640px}
+.app>*,.mbody>*{min-width:0}
+.side{background:var(--a-side);color:var(--a-side-tx);display:flex;flex-direction:column;gap:18px;padding:18px 14px}
+.brand{display:flex;gap:10px;align-items:center}
+.brand .lg{width:38px;height:38px;border-radius:10px;background:var(--a-acc);color:#fff;display:grid;place-items:center;font-weight:700}
+.brand b{display:block;color:#fff;font-size:14px}
+.brand span{font-size:12px;color:var(--a-side-mut)}
+.sgrp h4{margin:0 0 6px;font-size:11.5px;font-weight:600;color:var(--a-side-mut)}
+.mod{display:flex;justify-content:space-between;align-items:center;width:100%;border:0;background:none;color:var(--a-side-tx);padding:9px 10px;border-radius:8px;cursor:pointer;text-align:left;font-weight:500}
+.mod:hover{background:var(--a-side-2)}
+.mod[aria-current="true"]{background:var(--a-acc);color:#fff}
+.mod small{font-size:11.5px;opacity:.75}
+.sbtn{width:100%;border:1px solid #2A3E52;background:var(--a-side-2);color:var(--a-side-tx);border-radius:8px;padding:8px 10px;cursor:pointer;text-align:left;font-size:13px}
+.sbtn:hover{border-color:#3C5670}
+.sbtn+.sbtn{margin-top:6px}
+.stop{margin-top:auto;width:100%;border:0;border-radius:8px;padding:10px;background:#B42318;color:#fff;font-weight:600;cursor:pointer}
+.stop:hover{background:#8F1D15}
+.stop:disabled{background:var(--a-side-2);color:var(--a-side-mut);cursor:default}
+
+.main{display:grid;grid-template-rows:auto 1fr;min-width:0;color:var(--a-tx)}
+.mhead{display:flex;justify-content:space-between;gap:16px;align-items:flex-start;padding:20px 22px 12px;flex-wrap:wrap}
+.mhead h2{margin:0;font-size:22px;font-weight:700}
+.mhead p{margin:2px 0 0;color:var(--a-tx-2);font-size:13px;max-width:60ch}
+.exec{background:var(--a-card);border:1px solid var(--a-line);border-radius:10px;padding:10px 14px;min-width:250px}
+.exec h5{margin:0 0 6px;font-size:11.5px;font-weight:600;color:var(--a-tx-2)}
+.chip{display:inline-block;padding:3px 10px;border-radius:6px;font-size:12.5px;font-weight:600;background:var(--a-neu-bg);color:var(--a-neu)}
+.chip.ok{background:var(--a-ok-bg);color:var(--a-ok)} .chip.run{background:var(--a-run-bg);color:var(--a-run)} .chip.err{background:var(--a-err-bg);color:var(--a-err)}
+.exec p{margin:6px 0 0;font-size:12.5px;color:var(--a-tx-2)}
+.prog{height:4px;border-radius:2px;background:var(--a-neu-bg);margin-top:8px;overflow:hidden}
+.prog i{display:block;height:100%;width:0;background:var(--a-acc);transition:width .15s linear}
+
+.mbody{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.15fr);gap:16px;padding:0 22px 22px;min-height:0}
+.panel{background:var(--a-card);border:1px solid var(--a-line);border-radius:10px;padding:14px;min-width:0}
+.panel h5{margin:0 0 10px;font-size:11.5px;font-weight:600;color:var(--a-tx-2)}
+.acts-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.act{border:1px solid var(--a-line);background:var(--a-card-2);border-radius:10px;padding:12px;text-align:left;cursor:pointer;color:var(--a-tx)}
+.act:hover:not(:disabled){border-color:var(--a-acc)}
+.act b{display:block;font-size:13.5px}
+.act span{display:block;font-size:12px;color:var(--a-tx-2);margin-top:2px}
+.act:disabled{opacity:.5;cursor:default}
+.flow{display:grid;gap:8px}
+.step{display:grid;grid-template-columns:30px 1fr auto;gap:10px;align-items:center;border:1px solid var(--a-line);border-radius:10px;padding:10px 12px;background:var(--a-card-2);cursor:pointer;text-align:left;color:var(--a-tx)}
+.step:hover:not(:disabled){border-color:var(--a-acc)}
+.step:disabled{opacity:.5;cursor:default}
+.step .no{width:28px;height:28px;border-radius:50%;display:grid;place-items:center;background:var(--a-neu-bg);color:var(--a-neu);font-weight:700;font-size:13px}
+.step.next{border-color:var(--a-acc);box-shadow:inset 3px 0 0 var(--a-acc)}
+.step.next .no{background:var(--a-acc);color:#fff}
+.step.done .no{background:var(--a-ok-bg);color:var(--a-ok)}
+.step b{font-size:13.5px}
+.step small{display:block;color:var(--a-tx-2);font-size:12px}
+.step .st{font-size:12px;color:var(--a-tx-2);white-space:nowrap}
+.flow-note{margin:10px 0 0;font-size:12px;color:var(--a-tx-2)}
+
+.logp{display:grid;grid-template-rows:auto 1fr;min-height:360px}
+.loghead{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
+.loghead h5{margin:0}
+.clr{border:1px solid var(--a-line);background:var(--a-card-2);border-radius:6px;padding:3px 10px;cursor:pointer;font-size:12px;color:var(--a-tx-2)}
+.log{background:var(--a-log);color:var(--a-log-tx);border-radius:8px;padding:10px 12px;font:12px/1.55 ui-monospace,"Cascadia Mono",Consolas,monospace;overflow:auto;max-height:430px;min-height:300px;white-space:pre-wrap;word-break:break-word}
+.log .ok{color:#7DDB9B} .log .blq{color:#F2C14E} .log .er{color:#F59A9A} .log .mu{color:var(--a-log-mut)}
+
+/* ===== antes e depois ===== */
+.cmp{margin:34px 0 18px}
+.cmp h2{margin:0 0 4px;font-size:19px;font-weight:700}
+.cmp>p{margin:0 0 16px;color:var(--ink-2);max-width:80ch}
+.nums{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));background:var(--surface);border:1px solid var(--line);border-radius:3px}
+.num{padding:14px 18px;border-left:1px solid var(--line)}
+.num:first-child{border-left:0}
+.num .v{font-size:26px;font-weight:600;letter-spacing:-.01em;font-variant-numeric:tabular-nums}
+.num .l{font-size:13px;color:var(--ink-2)}
+.ba{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-top:18px}
+.ba div{background:var(--surface);border:1px solid var(--line);border-radius:3px;padding:14px 18px}
+.ba h3{margin:0 0 8px;font-size:14px;font-weight:600}
+.ba ol{margin:0;padding-left:20px;color:var(--ink-2)}
+.ba li{padding:3px 0}
+.foot{color:var(--muted);font-size:12.5px;margin:16px 0 48px;max-width:90ch}
+
+@media (max-width:900px){
+  .app{grid-template-columns:1fr}
+  .side{gap:12px;padding:14px}
+  .side .mods{padding-bottom:2px}
+  .side .mods{display:flex;gap:6px;overflow-x:auto}
+  .mod{white-space:nowrap;width:auto}
+  .mod small{display:none}
+  .sgrp.sup{display:none}
+  .stop{margin-top:0}
+  .mbody{grid-template-columns:1fr}
+  .acts-grid{grid-template-columns:1fr}
+  .ba{grid-template-columns:1fr}
+}
+@media (max-width:600px){
+  .wrap{padding-left:16px;padding-right:16px}
+  .top h1{font-size:21px}
+  .num{border-left:0;border-top:1px solid var(--line)}
+  .num:first-child{border-top:0}
+  .mhead,.mbody{padding-left:14px;padding-right:14px}
+  .exec{min-width:0;width:100%}
+}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<div class="demo">
+  <div class="wrap">
+    <span data-t="aviso"></span>
+    <span class="acts">
+      <span class="lang" role="group" aria-label="Idioma / Language">
+        <button type="button" data-lang="pt">PT</button><button type="button" data-lang="en">EN</button>
+      </span>
+      <a href="../" data-t="voltar"></a>
+    </span>
+  </div>
+</div>
+
+<main class="wrap">
+  <header class="top">
+    <h1 data-t="titulo"></h1>
+    <p data-t="subtitulo"></p>
+  </header>
+
+  <div class="win" role="region" aria-labelledby="mtitle">
+    <div class="titlebar"><span data-t="win_title"></span><span class="ctl" aria-hidden="true"><span>&#8211;</span><span>&#9633;</span><span>&#215;</span></span></div>
+    <div class="app">
+      <aside class="side">
+        <div class="brand"><span class="lg">CA</span><span><b data-t="app_nome"></b><span data-t="app_sub"></span></span></div>
+        <div class="sgrp"><h4 data-t="h_modulos"></h4><div class="mods" id="mods"></div></div>
+        <div class="sgrp sup"><h4 data-t="h_suporte"></h4>
+          <button type="button" class="sbtn" id="bValidar" data-t="b_validar"></button>
+          <button type="button" class="sbtn" id="bPlanilha" data-t="b_planilha"></button>
+        </div>
+        <button type="button" class="stop" id="bStop" data-t="b_parar" disabled></button>
+      </aside>
+      <section class="main">
+        <div class="mhead">
+          <div><h2 id="mtitle"></h2><p id="msub"></p></div>
+          <div class="exec" aria-live="polite">
+            <h5 data-t="h_exec"></h5>
+            <span class="chip" id="chip"></span>
+            <p id="substatus"></p>
+            <div class="prog"><i id="prog"></i></div>
+          </div>
+        </div>
+        <div class="mbody">
+          <div class="panel"><h5 id="acTitle"></h5><div id="acts"></div></div>
+          <div class="panel logp"><div class="loghead"><h5 data-t="h_log"></h5><button type="button" class="clr" id="bClear" data-t="b_limpar"></button></div>
+            <div class="log" id="log" role="log" aria-live="off"></div></div>
+        </div>
+      </section>
+    </div>
+  </div>
+
+  <section class="cmp">
+    <h2 data-t="cmp_titulo"></h2>
+    <p data-t="cmp_lead"></p>
+    <div class="nums">
+      <div class="num"><div class="v">5:30 → 0:30</div><div class="l" data-t="n1"></div></div>
+      <div class="num"><div class="v" id="n2v"></div><div class="l" data-t="n2"></div></div>
+      <div class="num"><div class="v">20</div><div class="l" data-t="n3"></div></div>
+      <div class="num"><div class="v">16</div><div class="l" data-t="n4"></div></div>
+    </div>
+    <div class="ba">
+      <div><h3 data-t="antes"></h3><ol id="antes"></ol></div>
+      <div><h3 data-t="depois"></h3><ol id="depois"></ol></div>
+    </div>
+    <p class="foot" data-t="rodape"></p>
+  </section>
+</main>
+
+<script>
+const TXT={
+pt:{
+  aviso:"Demonstração com dados fictícios. Os lançamentos abaixo são simulados; nenhum sistema real é acessado.",voltar:"Voltar ao portfólio",
+  titulo:"Central de automações",
+  subtitulo:"Réplica do aplicativo desktop que reúne 16 automações de lançamento no ERP e num sistema web. Escolha um módulo e execute para ver o fluxo como o operador vê.",
+  win_title:"Central de Automações | versão 2.0",app_nome:"Central de Automações",app_sub:"Lançamentos no ERP",
+  h_modulos:"Módulos",h_suporte:"Suporte",b_validar:"Validar arquivos",b_planilha:"Abrir planilha central",b_parar:"Forçar parada",
+  h_exec:"Execução atual",h_log:"Log da execução",b_limpar:"Limpar",h_auto:"Automações disponíveis",h_fluxo:"Fluxo de execução",
+  aguardando:"Aguardando",executando:"Executando",ok:"Finalizado ok",atencao:"Finalizado com avisos",parado:"Parado",
+  s_pronto:"Pronto para iniciar uma automação.",s_exec:"{op}: {i} de {n} lotes",s_fim:"Ok: {ok}. Bloqueados: {b}. Com erro: {e}.",s_parado:"Execução interrompida pelo usuário.",
+  s_valid:"Todos os arquivos esperados foram encontrados.",
+  st_pend:"pendente",st_prox:"próximo",st_feito:"executado",
+  flow_note:"O módulo mostra a ordem certa e destaca o próximo passo. Cada passo grava só o que ainda está vazio no ERP.",
+  log_valid:["[OK]   Planilha de controle encontrada.","[OK]   16 rotinas encontradas na pasta do aplicativo.","[OK]   Validação concluída: nenhum arquivo pendente."],
+  log_planilha:"[INFO] Na versão real, este botão abre a planilha de controle no Excel.",
+  log_parado:"[INFO] Parada solicitada pelo usuário. Os lotes já gravados ficam como estão.",
+  cmp_titulo:"O que mudou na operação",
+  cmp_lead:"Os números abaixo são da operação real em que o aplicativo roda, medidos por mim. A réplica acima usa dados fictícios.",
+  n1:"min de execução no ERP por lote, na cadeia de 4 passos (média, manual × automatizado)",
+  n2:"horas de execução economizadas em 7 semanas (222 lotes)",
+  n3:"tentativas de sobrescrever um lote já preenchido, barradas pela automação",
+  n4:"automações num único ponto de entrada, antes espalhadas em scripts e planilhas",
+  antes:"Antes",depois:"Com o aplicativo",
+  l_antes:["Procurar a pasta e o arquivo certos","Abrir a planilha ou o script","Escolher a rotina","Lembrar a ordem dos passos","Acompanhar o retorno de cada um"],
+  l_depois:["Abrir o aplicativo","Escolher o módulo","Validar os arquivos","Executar o passo indicado","Acompanhar tudo no mesmo log"],
+  rodape:"Tecnologias do aplicativo original: Python (interface, Selenium, scripting do ERP via COM, openpyxl) e VBA. O preparo da planilha é igual nos dois casos; a comparação de tempo considera só a execução.",
+},
+en:{
+  aviso:"Demo with made-up data. The runs below are simulated; no real system is touched.",voltar:"Back to portfolio",
+  titulo:"Automation hub",
+  subtitulo:"Replica of a desktop app that brings together 16 automations posting to an ERP and a web system. Pick a module and run it to see the flow the way the operator does.",
+  win_title:"Automation Hub | version 2.0",app_nome:"Automation Hub",app_sub:"ERP postings",
+  h_modulos:"Modules",h_suporte:"Support",b_validar:"Check files",b_planilha:"Open control workbook",b_parar:"Force stop",
+  h_exec:"Current run",h_log:"Run log",b_limpar:"Clear",h_auto:"Available automations",h_fluxo:"Run sequence",
+  aguardando:"Idle",executando:"Running",ok:"Finished ok",atencao:"Finished with warnings",parado:"Stopped",
+  s_pronto:"Ready to start an automation.",s_exec:"{op}: lot {i} of {n}",s_fim:"Ok: {ok}. Blocked: {b}. Errors: {e}.",s_parado:"Run stopped by the user.",
+  s_valid:"All expected files were found.",
+  st_pend:"pending",st_prox:"next",st_feito:"done",
+  flow_note:"The module shows the right order and highlights the next step. Each step only writes what is still empty in the ERP.",
+  log_valid:["[OK]   Control workbook found.","[OK]   16 routines found in the app folder.","[OK]   Check finished: no missing files."],
+  log_planilha:"[INFO] In the real app, this button opens the control workbook in Excel.",
+  log_parado:"[INFO] Stop requested by the user. Lots already written stay as they are.",
+  cmp_titulo:"What changed in the operation",
+  cmp_lead:"The numbers below come from the real operation where the app runs, measured by me. The replica above uses made-up data.",
+  n1:"min of ERP run time per lot across the 4-step chain (average, manual vs automated)",
+  n2:"hours of run time saved over 7 weeks (222 lots)",
+  n3:"attempts to overwrite an already filled lot, blocked by the automation",
+  n4:"automations behind one entry point, previously scattered across scripts and workbooks",
+  antes:"Before",depois:"With the app",
+  l_antes:["Find the right folder and file","Open the workbook or script","Pick the routine","Remember the step order","Follow each one's output"],
+  l_depois:["Open the app","Pick the module","Check the files","Run the highlighted step","Follow everything in one log"],
+  rodape:"Original app stack: Python (UI, Selenium, ERP scripting over COM, openpyxl) and VBA. Workbook preparation is the same either way; the time comparison covers run time only.",
+}};
+const MODS=[
+  {id:"insp",pt:"Lotes de inspeção",en:"Inspection lots",spt:"Cria no ERP um lote de inspeção por lote processado, conforme o tipo de análise.",sen:"Creates an inspection lot in the ERP for each processed lot, by analysis type.",
+   items:[["Análise tipo A","Type A analysis"],["Análise tipo B","Type B analysis"],["Análise tipo C","Type C analysis"],["Análise tipo D","Type D analysis"],["Tipos A e D juntos","Types A and D together"]],kind:"insp",tech:"Python"},
+  {id:"pes",pt:"Registro de pesagens",en:"Weighing records",spt:"Lê a aba de pesagens da planilha e lança cada registro no sistema web de logística.",sen:"Reads the weighing tab and posts each record to the logistics web system.",
+   items:[["Pesagens padrão","Standard weighings"],["Pesagens a granel","Bulk weighings"]],kind:"web",tech:"Selenium"},
+  {id:"atu",pt:"Atualização de lotes",en:"Lot update",spt:"Completa os dados dos lotes finais no ERP em quatro passos, sempre na mesma ordem.",sen:"Fills in finished-lot data in the ERP in four steps, always in the same order.",kind:"flow",tech:"Python"},
+  {id:"ent",pt:"Criação de lotes de entrada",en:"Intake lot creation",spt:"Macros da planilha que criam e classificam os lotes de entrada no ERP.",sen:"Workbook macros that create and classify intake lots in the ERP.",
+   items:[["Lote de entrada","Intake lot"],["Lote de entrada com faturamento","Intake lot with invoicing"],["Lotes por categoria","Lots by grade"]],kind:"vba",tech:"VBA"},
+  {id:"fin",pt:"Criação de lotes finais",en:"Finished lot creation",spt:"Gera as linhas por categoria e cria os lotes finais, devolvendo os números para a planilha.",sen:"Builds the rows by grade and creates the finished lots, writing the numbers back to the workbook.",
+   items:[["Gerar linhas","Build rows"],["Gerar lotes","Create lots"]],kind:"vba",tech:"VBA"},
+];
+const STEP_EN={"1 · Peso por unidade":"1 · Weight per unit","2 · Dados de embalagem":"2 · Packaging data","3 · Características do lote":"3 · Lot attributes","4 · Vínculo de origem":"4 · Source link"};
+const DATA_EN=[ // tradução das linhas de log geradas em português
+  [/Conexão com o ERP estabelecida\./,"ERP connection established."],
+  [/Planilha de controle conectada\. (\d+) lotes a processar\./,"Control workbook connected. $1 lots to process."],
+  [/Campo já preenchido no ERP: lote ignorado para não sobrescrever\./,"Field already filled in the ERP: lot skipped so nothing is overwritten."],
+  [/ERP não respondeu; lote mantido na fila para a próxima rodada\./,"ERP did not respond; lot kept in the queue for the next run."],
+  [/Peso líquido = ([\d,]+) kg/,(m,a)=>"Net weight = "+a.replace(",",".")+" kg"],
+  [/Embalagem = /,"Packaging = "],[/\| Quantidade = /,"| Quantity = "],[/Produto = /,"Product = "],[/Categoria = /,"Grade = "],[/Validade = /,"Best before = "],
+  [/Lote de origem = /,"Source lot = "],[/Lote de inspeção gerado -> /,"Inspection lot created -> "],
+  [/Fim: (\d+) ok, (\d+) bloqueados, (\d+) com erro\./,"Done: $1 ok, $2 blocked, $3 with errors."],
+  [/Varejo GG/,"Retail XL"],[/Varejo G\b/,"Retail L"],[/Varejo M\b/,"Retail M"],[/Varejo P\b/,"Retail S"],[/Industrial padrão/,"Bulk standard"],[/Industrial grande/,"Bulk large"],
+];
+
+const $=id=>document.getElementById(id);
+const store={get(k){try{return localStorage.getItem("da."+k)}catch(e){return null}},set(k,v){try{localStorage.setItem("da."+k,v)}catch(e){}}};
+let LANG=store.get("lang")||((navigator.language||"").toLowerCase().startsWith("pt")?"pt":"en");
+const t=(k,vars)=>{let s=TXT[LANG][k]??TXT.pt[k]??k;if(vars&&typeof s==="string")for(const[a,b]of Object.entries(vars))s=s.replace("{"+a+"}",b);return s;};
+const L=o=>LANG==="pt"?o.pt:o.en;
+const tr=line=>{if(LANG==="pt")return line;let s=line;for(const[re,rep]of DATA_EN)s=s.replace(re,rep);return s;};
+
+let D,mod="atu",timer=null,running=false,doneSteps=new Set(),RUNS={};
+
+/* ---------- log ---------- */
+function logLine(s){const el=$("log");const d=document.createElement("div");
+  const cls=s.includes("[BLOQ]")?"blq":s.includes("[ERRO]")?"er":s.includes("[OK]")?"ok":s.startsWith("[INFO]")||s.includes("] [INFO]")?"mu":"";
+  if(cls)d.className=cls;d.textContent=s;el.appendChild(d);el.scrollTop=el.scrollHeight;}
+function now(){const d=new Date();return d.toTimeString().slice(0,8);}
+function setStatus(kind,label,sub,p){const c=$("chip");c.className="chip"+(kind?" "+kind:"");c.textContent=label;$("substatus").textContent=sub;$("prog").style.width=(p||0)+"%";}
+
+/* ---------- execução simulada ---------- */
+function lock(on){running=on;$("bStop").disabled=!on;document.querySelectorAll(".act,.step,.mod,#bValidar,#bPlanilha").forEach(b=>b.disabled=on);}
+function play(lines,opName,after){
+  if(running)return;lock(true);
+  const total=lines.filter(l=>/\b(LF|LP)-\d+/.test(l)).length||1;let i=0,seen=0,ok=0,b=0,e=0;
+  logLine(`[${now()}] [INFO] ${opName}`);
+  setStatus("run",t("executando"),t("s_exec",{op:opName,i:0,n:total}),0);
+  const tick=()=>{
+    if(i>=lines.length){finish();return;}
+    const raw=lines[i++];const s=tr(raw);logLine(s);
+    if(/\b(LF|LP)-\d+/.test(raw)){seen++;if(raw.includes("[BLOQ]"))b++;else if(raw.includes("[ERRO]"))e++;else ok++;
+      setStatus("run",t("executando"),t("s_exec",{op:opName,i:seen,n:total}),seen/total*100);}
+    timer=setTimeout(tick,lines.length>60?22:70);
+  };
+  const finish=()=>{timer=null;lock(false);setStatus(b||e?"run":"ok",b||e?t("atencao"):t("ok"),t("s_fim",{ok,b,e}),100);
+    if(b||e)$("chip").className="chip run";if(after)after();renderActs();};
+  tick();
+}
+function stop(){if(!timer)return;clearTimeout(timer);timer=null;lock(false);logLine(t("log_parado"));setStatus("err",t("parado"),t("s_parado"),0);renderActs();}
+
+/* linhas simuladas para módulos sem log no arquivo de dados */
+function fakeLines(kind,name){
+  const lf=(RUNS.lotes||[]).slice(0,8);const out=[];let h=9,m=0,s=0;const ts=()=>{s+=4+Math.floor(Math.random()*4);if(s>59){s-=60;m++;}return `[${String(h).padStart(2,"0")}:${String(m).padStart(2,"0")}:${String(s).padStart(2,"0")}]`;};
+  const pt=LANG==="pt";
+  if(kind==="web"){out.push(`${ts()} [OK]   ${pt?"Sistema web aberto; sessão já autenticada.":"Web system open; session already signed in."}`);
+    const nf=new Intl.NumberFormat(pt?"pt-BR":"en-US");
+    lf.forEach((l,k)=>out.push(`${ts()} [OK]   ${l} | ${pt?"Pesagem":"Weighing"} ${3100+k*7} ${pt?"registrada":"posted"} | ${nf.format(27000+(k*3719)%9000)} kg`));}
+  else{out.push(`${ts()} [OK]   ${pt?"Macro iniciada a partir da planilha.":"Macro started from the workbook."}`);
+    lf.forEach((l,k)=>out.push(`${ts()} [OK]   ${l} | ${pt?"Lote criado no ERP":"Lot created in the ERP"} -> ${8200400+k}`));}
+  out.push(`${ts()} [INFO] ${pt?`Fim: ${lf.length} ok, 0 bloqueados, 0 com erro.`:`Done: ${lf.length} ok, 0 blocked, 0 with errors.`}`);
+  return out;
+}
+
+/* ---------- telas ---------- */
+function renderMods(){
+  $("mods").innerHTML=MODS.map(m=>`<button type="button" class="mod" data-m="${m.id}" aria-current="${m.id===mod}"><span>${L(m)}</span><small>${m.kind==="flow"?4:m.items.length}</small></button>`).join("");
+  $("mods").querySelectorAll(".mod").forEach(b=>b.onclick=()=>{mod=b.dataset.m;store.set("mod",mod);render();});
+  const cur=$("mods").querySelector('[aria-current="true"]');if(cur&&$("mods").scrollWidth>$("mods").clientWidth)$("mods").scrollLeft=cur.offsetLeft-$("mods").offsetLeft-8;
+}
+function renderActs(){
+  const m=MODS.find(x=>x.id===mod);
+  $("mtitle").textContent=L(m);$("msub").textContent=LANG==="pt"?m.spt:m.sen;
+  if(m.kind==="flow"){
+    $("acTitle").textContent=t("h_fluxo");
+    const next=[0,1,2,3].find(i=>!doneSteps.has(i));
+    $("acts").innerHTML=`<div class="flow">${D.etapas.map((e,i)=>{const done=doneSteps.has(i),nx=i===next;const name=(LANG==="pt"?e:STEP_EN[e]).replace(/^\d · /,"");
+      const r=RUNS.steps[i];return `<button type="button" class="step${done?" done":""}${nx?" next":""}" data-i="${i}"><span class="no">${i+1}</span><span><b>${name}</b><small>${r.lotes} ${LANG==="pt"?"lotes na planilha":"lots in the workbook"}</small></span><span class="st">${done?t("st_feito"):nx?t("st_prox"):t("st_pend")}</span></button>`;}).join("")}</div><p class="flow-note">${t("flow_note")}</p>`;
+    $("acts").querySelectorAll(".step").forEach(b=>b.onclick=()=>{const i=+b.dataset.i,r=RUNS.steps[i];const name=(LANG==="pt"?D.etapas[i]:STEP_EN[D.etapas[i]]);play(r.log,name,()=>doneSteps.add(i));});
+  }else{
+    $("acTitle").textContent=t("h_auto");
+    $("acts").innerHTML=`<div class="acts-grid">${m.items.map((it,k)=>`<button type="button" class="act" data-k="${k}"><b>${LANG==="pt"?it[0]:it[1]}</b><span>${m.tech}</span></button>`).join("")}</div>`;
+    $("acts").querySelectorAll(".act").forEach(b=>b.onclick=()=>{const it=m.items[+b.dataset.k],name=LANG==="pt"?it[0]:it[1];
+      play(m.kind==="insp"?RUNS.insp.log:fakeLines(m.kind,name),name);});
+  }
+  if(running)document.querySelectorAll(".act,.step,.mod").forEach(b=>b.disabled=true);
+}
+function render(){renderMods();renderActs();}
+function applyLang(){
+  document.documentElement.lang=LANG==="pt"?"pt-BR":"en";document.title=t("titulo")+" | DemoFoods";
+  document.querySelectorAll("[data-t]").forEach(el=>{const v=t(el.dataset.t);if(typeof v==="string")el.textContent=v;});
+  document.querySelectorAll(".lang button").forEach(b=>b.setAttribute("aria-pressed",b.dataset.lang===LANG));
+  $("antes").innerHTML=t("l_antes").map(x=>`<li>${x}</li>`).join("");$("depois").innerHTML=t("l_depois").map(x=>`<li>${x}</li>`).join("");
+  $("n2v").textContent=LANG==="pt"?"~18,5":"~18.5";
+  if(!running)setStatus("",t("aguardando"),t("s_pronto"),0);
+  if(D)render();
+}
+document.querySelectorAll(".lang button").forEach(b=>b.onclick=()=>{if(running)return;LANG=b.dataset.lang;store.set("lang",LANG);applyLang();});
+$("bStop").onclick=stop;$("bClear").onclick=()=>{$("log").innerHTML="";};
+$("bValidar").onclick=()=>{t("log_valid").forEach(l=>logLine(`[${now()}] ${l}`));setStatus("ok",LANG==="pt"?"Arquivos ok":"Files ok",t("s_valid"),0);};
+$("bPlanilha").onclick=()=>logLine(`[${now()}] ${t("log_planilha")}`);
+
+(async()=>{
+  applyLang();
+  try{D=window.__DADOS__||await(await fetch("../dados/automacoes.json")).json();}
+  catch(e){$("log").textContent="Não foi possível carregar os dados. / The data could not be loaded.";return;}
+  // rodada de demonstração: a mais recente em que o passo 2 barrou algum lote já preenchido
+  const upd=D.execucoes.filter(x=>x.modulo==="Atualização de lotes");
+  const dia=[...upd].reverse().find(x=>x.etapa===D.etapas[1]&&x.bloqueados>0).data;
+  RUNS.steps=D.etapas.map(et=>upd.find(x=>x.data===dia&&x.etapa===et));
+  RUNS.insp=[...D.execucoes].reverse().find(x=>x.modulo==="Lotes de inspeção");
+  RUNS.lotes=[...new Set(RUNS.steps[0].log.map(l=>(l.match(/LF-\d+/)||[])[0]).filter(Boolean))];
+  mod=MODS.some(m=>m.id===store.get("mod"))?store.get("mod"):"atu";
+  applyLang();
+  logLine(`[${now()}] [INFO] ${LANG==="pt"?"Versão 2.0":"Version 2.0"}`);$("bValidar").click();
+})();
+</script>
+</body>
+</html>
