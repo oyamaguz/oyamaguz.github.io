@@ -50,6 +50,7 @@ h1,h2,h3{text-wrap:balance}
 .intro{padding:56px 0 36px;display:grid;grid-template-columns:minmax(0,1fr) auto;gap:16px 40px;align-items:end}
 .intro h1{margin:0;font-size:clamp(32px,4vw,44px);line-height:1.1;font-weight:700;letter-spacing:-.02em}
 .intro p{margin:10px 0 0;font-size:18px;color:var(--ink-2);max-width:60ch}
+.intro .role{margin-top:8px;font-size:15px;color:var(--muted)}
 .intro .where{font-size:14.5px;color:var(--muted);text-align:right;white-space:nowrap}
 .intro .where a{display:block;margin-top:2px}
 
@@ -158,6 +159,7 @@ h1,h2,h3{text-wrap:balance}
     <div>
       <h1>Gustavo Oyama</h1>
       <p data-t="intro"></p>
+      <p class="role" data-t="role"></p>
     </div>
     <div class="where"><span data-t="local"></span><a href="https://www.linkedin.com/in/gustavooyama/">LinkedIn</a></div>
   </section>
@@ -176,7 +178,7 @@ h1,h2,h3{text-wrap:balance}
       <a class="card" href="#p-painel">
         <img data-img="monitoramento" width="1280" height="720" alt="">
         <div class="body">
-          <span class="kind">Power BI</span>
+          <span class="kind" data-t="b_kind"></span>
           <h2 data-t="b_h"></h2>
           <p data-t="b_card"></p>
           <div class="fact"><span data-t="b_fact_l"></span><b data-t="b_fact_v"></b></div>
@@ -220,6 +222,7 @@ h1,h2,h3{text-wrap:balance}
         <h4 data-t="g_h"></h4>
         <div class="legend"><span><i style="background:var(--auto)"></i><span data-t="g_l1"></span></span><span><i style="background:var(--soft)"></i><span data-t="g_l2"></span></span></div>
         <div class="chart" id="chart" role="img"></div>
+        <p class="cap" data-t="r_bloq"></p>
         <div class="figs">
           <div><b>222</b><span data-t="f1"></span></div>
           <div><b id="f2v"></b><span data-t="f2"></span></div>
@@ -232,11 +235,11 @@ h1,h2,h3{text-wrap:balance}
   <!-- 2. painel -->
   <section class="study" id="p-painel">
     <div class="meta">
-      <span class="kind">Power BI</span>
+      <span class="kind" data-t="b_kind"></span>
       <h2 data-t="b_h"></h2>
       <dl>
         <dt data-t="dt_tools"></dt><dd>Power BI, DAX, Power Query (M)</dd>
-        <dt data-t="dt_users"></dt><dd data-t="b_users"></dd>
+        <dt data-t="dt_data"></dt><dd data-t="dd_data"></dd>
       </dl>
       <a class="btn" href="monitoramento/" data-t="abrir"></a>
     </div>
@@ -254,7 +257,7 @@ h1,h2,h3{text-wrap:balance}
       <h2 data-t="c_h"></h2>
       <dl>
         <dt data-t="dt_tools"></dt><dd>Excel, Power Query (M), Python, win32com</dd>
-        <dt data-t="dt_users"></dt><dd data-t="c_users"></dd>
+        <dt data-t="dt_data"></dt><dd data-t="dd_data"></dd>
       </dl>
       <a class="btn" href="planejamento/" data-t="abrir"></a>
     </div>
@@ -303,33 +306,33 @@ const TXT={
 pt:{
   m_proj:"Projetos",m_sobre:"Sobre",m_contato:"Contato",
   intro:"Análise de dados e BI para operações de produção: painéis em Power BI, planilhas de planejamento e automação de lançamentos em ERP.",
+  role:"Analista de planejamento de processos, dados e BI. Tecnologia em Ciência de Dados em andamento.",
   local:"Itumbiara, Goiás, Brasil",
-  nota:"As três demonstrações são navegáveis e usam dados fictícios de uma empresa de exemplo, a DemoFoods.",
+  nota:"Os dois projetos de BI são autônomos, construídos sobre a DemoFoods, uma empresa fictícia. A central de automações está em uso; a demonstração dela também usa dados fictícios.",
   a_kind:"Aplicativo desktop em Python",a_h:"Central de automações",
   a_card:"Reúne 16 rotinas de lançamento no ERP num só aplicativo e conduz a execução passo a passo.",
   a_fact_l:"Execução por lote",
   b_h:"Processamento e envase",
   b_card:"Consolida os dados de três fábricas e aponta sozinho o que não fecha.",
   b_fact_l:"Regras de conferência",b_fact_v:"mais de 10",
-  c_kind:"Excel e Python",c_h:"Plano de etapas",
+  b_kind:"Projeto autônomo em Power BI",c_kind:"Projeto autônomo em Excel e Python",c_h:"Plano de etapas",
   c_card:"Mostra o que cada etapa de produção vai entregar e confere embalagens e insumos contra o estoque.",
   c_fact_l:"Itens conferidos por etapa",c_fact_v:"16",
-  dt_tools:"Ferramentas",dt_users:"Quem usa",
+  dt_tools:"Ferramentas",dt_users:"Quem usa",dt_data:"Dados",dd_data:"Fictícios, gerados por um script em Python",
   abrir:"Abrir demonstração",
   h_ctx:"Contexto",h_sol:"Solução",h_res:"Resultado",h_demo:"Na demonstração",
-  a_users:"Equipe de planejamento, na rotina diária de lançamentos",
+  a_users:"Analistas",
   a_ctx:"Dezesseis rotinas de lançamento no ERP e num sistema web, cada uma num script ou macro diferente. Para rodar, era preciso saber onde estava cada rotina e em que ordem executar. Na cadeia de atualização de lotes, com quatro passos, cada lote levava em média 5 minutos e meio.",
   a_sol:["Um aplicativo que agrupa as rotinas por processo e roda tudo a partir de uma planilha de controle.","Antes de executar, confere se os arquivos necessários estão no lugar.","Indica o próximo passo da sequência e mostra o andamento num log, lote a lote.","Cada passo grava no ERP só o que ainda está vazio, o que evita lançar o mesmo lote duas vezes."],
   r_m:"À mão",r_a:"Com o aplicativo",r_cap:"Tempo médio de execução por lote na cadeia de quatro passos, medido em operação. O preparo da planilha é o mesmo nos dois casos.",
+  r_bloq:"Lançamento em dobro evitado: na rodada de 03/09, 20 lotes da planilha já constavam como lançados no ERP. Em vez de lançar de novo, o aplicativo pulou esses lotes e registrou o motivo no log.",
   g_h:"Horas de execução economizadas, setembro e outubro de 2026",g_l1:"Acumulado",g_l2:"Lotes por rodada",
-  f1:"lotes processados sem digitação em 7 semanas",f2:"de execução economizadas no período",f3:"lotes barrados numa rodada por já estarem lançados",
-  bloq:"20 lotes barrados por já estarem lançados",
-  b_users:"Gestão e planejamento da operação",
-  b_ctx:"Cada fábrica reportava processamento e envase numa planilha própria. Juntar tudo era manual, e um erro de lançamento só aparecia quando o número não fechava no fim do período.",
+  f1:"lotes processados sem digitação em 7 semanas",f2:"de execução economizadas no período",f3:"lotes pulados por já estarem lançados, sem lançamento em dobro",
+  bloq:"03/09: 20 lotes já lançados, pulados",
+  b_ctx:"A DemoFoods processa e envasa em três fábricas, e cada uma reporta numa planilha própria. O projeto junta essas fontes num único modelo e encontra sozinho o que não fecha, antes que um erro chegue ao fechamento do período.",
   b_sol:["Power Query consolida as planilhas das fábricas num único modelo.","A previsão de cada lote de matéria-prima é conferida contra o processado e o envasado, com os lotes de mistura divididos pela proporção de cada origem.","Um motor de alertas em M aplica mais de dez regras: rendimento fora da tolerância, status que contradiz o envase, consumo de embalagem acima do previsto, datas faltando."],
   b_demo:"A versão web do painel, com as cinco páginas, os filtros por fábrica, produto, categoria e período e a lista de alertas.",
-  c_users:"Planejamento, antes de liberar cada etapa",
-  c_ctx:"Planejar cada etapa de produção exigia cruzar a demanda por canal, o potencial dos lotes e o estoque de embalagens e insumos, em planilhas diferentes, toda semana.",
+  c_ctx:"Na DemoFoods, planejar cada etapa de produção exige cruzar a demanda por canal, o potencial dos lotes e o estoque de embalagens e insumos. O projeto reúne esse cálculo num só lugar e mostra o que falta antes de a etapa começar.",
   c_sol:["Uma planilha que faz o cálculo completo da etapa com Power Query e fórmulas.","Regra de produção \"industrial primeiro\": cada etapa completa a demanda industrial em aberto e o restante vai para varejo.","Um script em Python abre a planilha, percorre todas as combinações de fábrica e etapa e gera o painel numa página só. Ele localiza as seções pelo título, então mudanças de layout não quebram a leitura."],
   c_demo:"A sequência de etapas de cada fábrica e, para cada etapa, demanda, distribuição por embalagem, cobertura de embalagens e insumos contra o estoque e os lotes envolvidos.",
   sobre_h:"Sobre",
@@ -347,33 +350,33 @@ pt:{
 en:{
   m_proj:"Work",m_sobre:"About",m_contato:"Contact",
   intro:"Data analysis and BI for production operations: Power BI dashboards, planning workbooks and automated ERP postings.",
+  role:"Process planning analyst, data and BI. Data Science degree in progress.",
   local:"Itumbiara, Goiás, Brazil",
-  nota:"All three demos are clickable and use made-up data from a sample company, DemoFoods.",
+  nota:"The two BI projects are independent, built around DemoFoods, a made-up company. The automation hub is in use; its demo also runs on made-up data.",
   a_kind:"Python desktop app",a_h:"Automation hub",
   a_card:"Brings 16 ERP posting routines into one app and walks through each run step by step.",
   a_fact_l:"Run time per lot",
   b_h:"Processing and packing",
   b_card:"Combines data from three plants and flags on its own what doesn't add up.",
   b_fact_l:"Data checks",b_fact_v:"more than 10",
-  c_kind:"Excel and Python",c_h:"Stage plan",
+  b_kind:"Independent project in Power BI",c_kind:"Independent project in Excel and Python",c_h:"Stage plan",
   c_card:"Shows what each production stage will deliver and checks packaging and materials against stock.",
   c_fact_l:"Items checked per stage",c_fact_v:"16",
-  dt_tools:"Tools",dt_users:"Used by",
+  dt_tools:"Tools",dt_users:"Used by",dt_data:"Data",dd_data:"Made up, generated by a Python script",
   abrir:"Open demo",
   h_ctx:"Context",h_sol:"Solution",h_res:"Result",h_demo:"In the demo",
-  a_users:"Planning team, in the daily posting routine",
+  a_users:"Analysts",
   a_ctx:"Sixteen posting routines for an ERP and a web system, each in its own script or macro. Running them meant knowing where each routine lived and in what order to run it. In the four-step lot update chain, each lot took five and a half minutes on average.",
   a_sol:["An app that groups the routines by process and runs everything from a control workbook.","Before running, it checks that the required files are in place.","It points to the next step in the sequence and shows progress in a log, lot by lot.","Each step writes to the ERP only what is still empty, so the same lot is never posted twice."],
   r_m:"By hand",r_a:"With the app",r_cap:"Average run time per lot across the four-step chain, measured in operation. Workbook preparation is the same either way.",
+  r_bloq:"Double posting avoided: in the 09/03 run, 20 lots in the workbook were already posted in the ERP. Instead of posting them again, the app skipped them and logged the reason.",
   g_h:"Run time saved, September and October 2026",g_l1:"Cumulative",g_l2:"Lots per run",
-  f1:"lots processed with no typing in 7 weeks",f2:"of run time saved over the period",f3:"lots blocked in one run because they were already posted",
-  bloq:"20 lots blocked as already posted",
-  b_users:"Operations management and planning",
-  b_ctx:"Each plant reported processing and packing in its own workbook. Combining them was manual, and a posting error only showed up when the numbers didn't match at the end of the period.",
+  f1:"lots processed with no typing in 7 weeks",f2:"of run time saved over the period",f3:"lots skipped because they were already posted, no double posting",
+  bloq:"09/03: 20 lots already posted, skipped",
+  b_ctx:"DemoFoods processes and packs in three plants, and each one reports in its own workbook. The project brings those sources into one model and finds on its own what doesn't add up, before an error reaches period close.",
   b_sol:["Power Query combines the plants' workbooks into a single model.","Each raw material lot's forecast is checked against what was processed and packed, with blended lots split by each source's share.","An alert engine in M applies more than ten rules: yield off tolerance, status that contradicts packing, packaging use above plan, missing dates."],
   b_demo:"The web version of the dashboard, with its five pages, the plant, product, grade and period filters, and the alert list.",
-  c_users:"Planning, before each stage is released",
-  c_ctx:"Planning each production stage meant cross-checking channel demand, lot potential and packaging and material stock across different workbooks, every week.",
+  c_ctx:"At DemoFoods, planning each production stage means cross-checking channel demand, lot potential and packaging and material stock. The project puts that calculation in one place and shows what is missing before the stage starts.",
   c_sol:["A workbook that runs the full stage calculation with Power Query and formulas.","\"Bulk first\" production rule: each stage fills open bulk demand and the rest goes to retail.","A Python script opens the workbook, goes through every plant and stage combination and generates the dashboard as a single page. It finds sections by their titles, so layout changes don't break it."],
   c_demo:"Each plant's stage sequence and, for every stage, demand, packaging breakdown, packaging and material coverage against stock, and the lots involved.",
   sobre_h:"About",
