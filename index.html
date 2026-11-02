@@ -4,9 +4,318 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Gustavo Oyama</title>
-<meta http-equiv="refresh" content="0; url=monitoramento/">
+<meta name="description" content="Portfólio de Gustavo Oyama: painéis em Power BI, planilhas com Power Query e automações em Python e VBA para operações industriais.">
+<meta property="og:title" content="Gustavo Oyama">
+<meta property="og:description" content="Painéis, planilhas e automações para operações industriais. Demonstrações navegáveis com dados fictícios.">
+<meta property="og:image" content="https://oyamaguz.github.io/img/monitoramento_pt.webp">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;500;600;700&display=swap">
+<style>
+/* página pessoal: mesma família e mesmos tons das demonstrações, com mais ar */
+:root{
+  --bg:#F3F4F5; --surface:#FFFFFF; --sunk:#E8EBEE; --ink:#1E2227; --ink-2:#434A53; --muted:#69727D; --line:#D9DDE1;
+  --accent:#2F6690; --accent-2:#B7792B;
+  color-scheme:light;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#15181B; --surface:#1D2125; --sunk:#262B31; --ink:#E6E9EC; --ink-2:#C2C8CE; --muted:#929BA5; --line:#30363C;
+  --accent:#7FAED3; --accent-2:#D49A4E; color-scheme:dark;
+}}
+:root[data-theme="dark"]{
+  --bg:#15181B; --surface:#1D2125; --sunk:#262B31; --ink:#E6E9EC; --ink-2:#C2C8CE; --muted:#929BA5; --line:#30363C;
+  --accent:#7FAED3; --accent-2:#D49A4E; color-scheme:dark;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth;scroll-padding-top:64px}
+body{margin:0;background:var(--bg);color:var(--ink);font:400 16px/1.6 "Public Sans",system-ui,-apple-system,"Segoe UI",sans-serif;-webkit-font-smoothing:antialiased}
+a{color:var(--accent)}
+:focus-visible{outline:2px solid var(--accent);outline-offset:3px}
+.wrap{max-width:1080px;margin:0 auto;padding-left:max(20px,env(safe-area-inset-left,0px));padding-right:max(20px,env(safe-area-inset-right,0px))}
+h1,h2,h3{text-wrap:balance}
+
+/* topo */
+.nav{position:sticky;top:0;z-index:5;background:color-mix(in srgb,var(--bg) 92%,transparent);backdrop-filter:blur(6px);border-bottom:1px solid var(--line)}
+.nav .wrap{display:flex;align-items:center;justify-content:space-between;gap:16px;height:56px}
+.nav b{font-weight:700;letter-spacing:-.01em}
+.nav nav{display:flex;gap:22px;align-items:center;font-size:14.5px}
+.nav nav a{color:var(--ink-2);text-decoration:none}
+.nav nav a:hover{color:var(--ink)}
+.lang{display:inline-flex;border:1px solid var(--line);border-radius:3px;overflow:hidden}
+.lang button{background:none;border:0;padding:2px 8px;cursor:pointer;font:600 12px "Public Sans",sans-serif;color:var(--ink-2)}
+.lang button[aria-pressed="true"]{background:var(--ink);color:var(--bg)}
+
+/* abertura */
+.hero{padding:72px 0 40px}
+.hero h1{margin:0;font-size:clamp(34px,5.4vw,58px);line-height:1.04;font-weight:700;letter-spacing:-.025em;max-width:16ch}
+.hero .lead{margin:22px 0 0;font-size:19px;color:var(--ink-2);max-width:58ch}
+.hero .facts{margin:18px 0 0;color:var(--muted);font-size:15px}
+.disc{margin:34px 0 0;padding:14px 18px;border-left:3px solid var(--accent-2);background:var(--surface);color:var(--ink-2);font-size:15px;max-width:72ch}
+
+/* fluxo */
+.flow{margin:56px 0 8px}
+.flow h2{margin:0 0 4px;font-size:15px;font-weight:600;color:var(--muted)}
+.chain{display:grid;grid-template-columns:repeat(4,1fr);border:1px solid var(--line);background:var(--surface);border-radius:3px}
+.node{position:relative;padding:16px 18px 18px;border-left:1px solid var(--line);text-decoration:none;color:inherit;display:block}
+.node:first-child{border-left:0}
+.node:not(:last-child)::after{content:"";position:absolute;right:-7px;top:50%;width:12px;height:12px;background:var(--surface);border-top:1px solid var(--line);border-right:1px solid var(--line);transform:translateY(-50%) rotate(45deg);z-index:1}
+a.node:hover{background:var(--sunk)}
+a.node:hover::after{background:var(--sunk)}
+.node .k{font-size:13px;color:var(--muted)}
+.node b{display:block;font-size:16px;margin-top:2px}
+.node span{display:block;font-size:13.5px;color:var(--ink-2);margin-top:4px}
+.node .go{color:var(--accent);font-weight:600}
+
+/* cases */
+.cases{margin:64px 0 0;display:grid;gap:72px}
+.case{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,1fr);gap:40px;align-items:start}
+.shot{display:block;border:1px solid var(--line);border-radius:4px;overflow:hidden;background:var(--surface);box-shadow:0 20px 40px -32px rgba(15,25,35,.5)}
+.shot img{display:block;width:100%;height:auto;aspect-ratio:16/9}
+.case .tag{font-size:13.5px;color:var(--muted)}
+.case h3{margin:2px 0 12px;font-size:26px;line-height:1.15;letter-spacing:-.015em}
+.case p{margin:0 0 12px;color:var(--ink-2);max-width:60ch}
+.case p b{color:var(--ink);font-weight:600}
+.case ul{margin:4px 0 16px;padding-left:18px;color:var(--ink-2)}
+.case li{margin:4px 0}
+.case .stack{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 18px;padding:0;list-style:none}
+.stack li{font-size:13px;padding:2px 9px;border:1px solid var(--line);border-radius:3px;color:var(--ink-2);background:var(--surface);margin:0}
+.btn{display:inline-block;padding:9px 16px;border-radius:3px;background:var(--ink);color:var(--bg);text-decoration:none;font-weight:600;font-size:15px}
+.btn:hover{background:var(--accent);color:#fff}
+.result{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px;margin:6px 0 16px}
+.result div{font-size:13px;line-height:1.4;color:var(--ink-2)}
+.result b{display:block;white-space:nowrap;font-size:22px;color:var(--ink);font-weight:600;font-variant-numeric:tabular-nums;letter-spacing:-.01em}
+
+/* sobre e contato */
+.about{margin:96px 0 0;padding-top:40px;border-top:1px solid var(--line);display:grid;grid-template-columns:minmax(0,1.3fr) minmax(0,1fr);gap:48px}
+.about h2,.contact h2{margin:0 0 12px;font-size:22px;letter-spacing:-.01em}
+.about p{margin:0 0 12px;color:var(--ink-2);max-width:62ch}
+.tools{margin:0;padding:0;list-style:none}
+.tools li{display:grid;grid-template-columns:130px 1fr;gap:12px;padding:9px 0;border-bottom:1px solid var(--line);font-size:15px}
+.tools li:last-child{border-bottom:0}
+.tools b{font-weight:600}
+.tools span{color:var(--ink-2)}
+.contact{margin:72px 0 0;padding:28px 0 80px;border-top:1px solid var(--line)}
+.contact p{margin:0 0 14px;color:var(--ink-2)}
+.cline{display:flex;flex-wrap:wrap;gap:12px 28px;align-items:center;font-size:17px}
+.mail{font-weight:600;color:var(--ink);user-select:all}
+.copy{border:1px solid var(--line);background:var(--surface);border-radius:3px;padding:4px 10px;cursor:pointer;font:500 13px "Public Sans",sans-serif;color:var(--ink-2)}
+.contact .foot{color:var(--muted);font-size:13.5px;margin:40px 0 0}
+
+@media (max-width:860px){
+  .chain{grid-template-columns:1fr 1fr}
+  .node:nth-child(3){border-left:0}
+  .node:nth-child(n+3){border-top:1px solid var(--line)}
+  .node:nth-child(2)::after{display:none}
+  .case{grid-template-columns:1fr;gap:22px}
+  .about{grid-template-columns:1fr;gap:28px}
+}
+@media (max-width:560px){
+  body{font-size:15.5px}
+  .nav nav a{display:none}
+  .hero{padding:44px 0 28px}
+  .hero .lead{font-size:17px}
+  .chain{grid-template-columns:1fr}
+  .node{border-left:0;border-top:1px solid var(--line)}
+  .node:first-child{border-top:0}
+  .node::after{display:none}
+  .case h3{font-size:22px}
+  .result{grid-template-columns:1fr 1fr}
+  .result div:first-child{grid-column:1/-1}
+  .tools li{grid-template-columns:1fr;gap:0}
+}
+@media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
+</style>
 </head>
 <body>
-<p><a href="monitoramento/">Processamento e envase (demonstração)</a></p>
+<header class="nav">
+  <div class="wrap">
+    <b>Gustavo Oyama</b>
+    <nav>
+      <a href="#cases" data-t="m_cases"></a><a href="#sobre" data-t="m_sobre"></a><a href="#contato" data-t="m_contato"></a>
+      <span class="lang" role="group" aria-label="Idioma / Language"><button type="button" data-lang="pt">PT</button><button type="button" data-lang="en">EN</button></span>
+    </nav>
+  </div>
+</header>
+
+<main class="wrap">
+  <section class="hero">
+    <h1 data-t="h1"></h1>
+    <p class="lead" data-t="lead"></p>
+    <p class="facts" data-t="facts"></p>
+    <p class="disc" data-t="disc"></p>
+  </section>
+
+  <section class="flow" aria-labelledby="flowh">
+    <h2 id="flowh" data-t="flow_h"></h2>
+    <div class="chain">
+      <div class="node"><span class="k" data-t="f0k"></span><b data-t="f0"></b><span data-t="f0s"></span></div>
+      <a class="node" href="#case-plano"><span class="k" data-t="f1k"></span><b data-t="f1"></b><span data-t="f1s"></span></a>
+      <a class="node" href="#case-painel"><span class="k" data-t="f2k"></span><b data-t="f2"></b><span data-t="f2s"></span></a>
+      <a class="node" href="#case-app"><span class="k" data-t="f3k"></span><b data-t="f3"></b><span data-t="f3s"></span></a>
+    </div>
+  </section>
+
+  <div class="cases" id="cases">
+    <article class="case" id="case-plano">
+      <a class="shot" href="planejamento/"><img data-img="planejamento" width="1280" height="720" alt="" loading="lazy"></a>
+      <div>
+        <span class="tag" data-t="c2tag"></span>
+        <h3 data-t="c2h"></h3>
+        <p data-t="c2p1"></p>
+        <p data-t="c2p2"></p>
+        <ul data-list="c2l"></ul>
+        <ul class="stack"><li>Excel</li><li>Power Query (M)</li><li>Python</li><li>win32com</li><li>HTML/JS</li></ul>
+        <a class="btn" href="planejamento/" data-t="abrir"></a>
+      </div>
+    </article>
+
+    <article class="case" id="case-painel">
+      <a class="shot" href="monitoramento/"><img data-img="monitoramento" width="1280" height="720" alt="" loading="lazy"></a>
+      <div>
+        <span class="tag" data-t="c1tag"></span>
+        <h3 data-t="c1h"></h3>
+        <p data-t="c1p1"></p>
+        <p data-t="c1p2"></p>
+        <ul data-list="c1l"></ul>
+        <ul class="stack"><li>Power BI</li><li>DAX</li><li>Power Query (M)</li><li>HTML/JS</li></ul>
+        <a class="btn" href="monitoramento/" data-t="abrir"></a>
+      </div>
+    </article>
+
+    <article class="case" id="case-app">
+      <a class="shot" href="automacoes/"><img data-img="automacoes" width="1280" height="720" alt="" loading="lazy"></a>
+      <div>
+        <span class="tag" data-t="c3tag"></span>
+        <h3 data-t="c3h"></h3>
+        <p data-t="c3p1"></p>
+        <div class="result">
+          <div><b>5:30 → 0:30</b><span data-t="r1"></span></div>
+          <div><b data-t="r2v"></b><span data-t="r2"></span></div>
+          <div><b>20</b><span data-t="r3"></span></div>
+        </div>
+        <p data-t="c3p2"></p>
+        <ul class="stack"><li>Python</li><li>Selenium</li><li>SAP GUI Scripting</li><li>openpyxl</li><li>VBA</li></ul>
+        <a class="btn" href="automacoes/" data-t="abrir_app"></a>
+      </div>
+    </article>
+  </div>
+
+  <section class="about" id="sobre">
+    <div>
+      <h2 data-t="sobre_h"></h2>
+      <p data-t="sobre1"></p>
+      <p data-t="sobre2"></p>
+      <p data-t="sobre3"></p>
+    </div>
+    <div>
+      <h2 data-t="ferr_h"></h2>
+      <ul class="tools" data-tools></ul>
+    </div>
+  </section>
+
+  <section class="contact" id="contato">
+    <h2 data-t="cont_h"></h2>
+    <p data-t="cont_p"></p>
+    <div class="cline">
+      <span class="mail">x.oyama11@gmail.com</span>
+      <button type="button" class="copy" id="copy" data-t="copiar"></button>
+      <a href="https://github.com/oyamaguz">github.com/oyamaguz</a>
+    </div>
+    <p class="foot" data-t="rodape"></p>
+  </section>
+</main>
+
+<script>
+const TXT={
+pt:{
+  m_cases:"Cases",m_sobre:"Sobre",m_contato:"Contato",
+  h1:"Painéis, planilhas e automações para quem opera a produção.",
+  lead:"Sou analista de planejamento de processos. Construo as ferramentas que a equipe usa no dia a dia para saber o que foi produzido, o que falta e o que está errado, e automatizo os lançamentos repetitivos no sistema.",
+  facts:"Power BI, Power Query, Excel, Python e VBA. Itumbiara, GO, Brasil.",
+  disc:"Os três cases abaixo reconstroem ferramentas que criei no trabalho. A empresa (DemoFoods), o setor e todos os números são fictícios e foram gerados por um script; a lógica, as regras e o desenho das telas são os mesmos.",
+  flow_h:"Onde cada ferramenta entra na operação",
+  f0k:"Início",f0:"Matéria-prima chega",f0s:"Previsão de entrada por lote e fornecedor.",
+  f1k:"Planejar",f1:"Plano de etapas",f1s:"O que cada etapa vai produzir e se há material.",
+  f2k:"Acompanhar",f2:"Processamento e envase",f2s:"O que foi feito, o que travou e o que não fecha.",
+  f3k:"Registrar",f3:"Lançamentos no ERP",f3s:"Os dados dos lotes entram no sistema sem digitação.",
+  abrir:"Abrir a demonstração",abrir_app:"Abrir a réplica",
+  c1tag:"Power BI, publicado aqui como página web",c1h:"Processamento e envase em três fábricas",
+  c1p1:"<b>O problema:</b> cada fábrica reportava numa planilha própria. Para saber o que já tinha sido processado, envasado ou estava parado, alguém juntava tudo à mão, e erro de lançamento só aparecia quando o número não fechava no fim do mês.",
+  c1p2:"<b>O que construí:</b> um modelo em Power BI alimentado por Power Query que consolida as planilhas das fábricas e confere os dados sozinho.",
+  c1l:["Concilia previsão, processado e envasado por lote de matéria-prima, dividindo os lotes de mistura pela proporção de cada origem.","Um motor de alertas escrito em M, com mais de dez regras: rendimento fora da tolerância, status que contradiz o envase, embalagem acima do previsto, datas faltando.","Na demonstração, os filtros de fábrica, produto, categoria e período funcionam como no painel original."],
+  c2tag:"Excel e Python",c2h:"Plano de etapas de produção",
+  c2p1:"<b>O problema:</b> planejar cada etapa exigia cruzar demanda por canal, potencial dos lotes e estoque de embalagens e insumos, em planilhas diferentes, toda semana.",
+  c2p2:"<b>O que construí:</b> uma planilha que faz o cálculo inteiro com Power Query e fórmulas, e um script Python que abre a planilha, percorre cada combinação de fábrica e etapa e gera este painel numa página só.",
+  c2l:["Regra de produção \"industrial primeiro\": cada etapa completa a demanda industrial em aberto e o resto vai para varejo.","Cobertura de cada embalagem e insumo contra o estoque, com margem de segurança e o filtro \"só o que falta\".","O script acha as seções da planilha pelo título, então inserir linhas não quebra a leitura."],
+  c3tag:"Aplicativo desktop em Python",c3h:"Central de automações",
+  c3p1:"<b>O problema:</b> dezesseis automações de lançamento no ERP e num sistema web, espalhadas em scripts e macros. Para rodar, era preciso saber onde estava cada uma e em que ordem executar.",
+  r1:"min de execução no ERP por lote (média)",r2v:"~18,5 h",r2:"economizadas em 7 semanas",r3:"sobrescritas de lote barradas",
+  c3p2:"<b>O que construí:</b> um aplicativo que reúne tudo num lugar, confere os arquivos antes de rodar, mostra a sequência certa e registra cada lançamento em log. A réplica usa dados fictícios; os números acima são da operação real.",
+  sobre_h:"Sobre",
+  sobre1:"Trabalho com planejamento de processos numa operação com unidades de produção terceirizadas, onde sou o ponto focal de Power BI. Meu trabalho é transformar planilhas soltas em bases confiáveis e tirar das pessoas o trabalho de digitar e conferir.",
+  sobre2:"Aprendi Power BI, Python e automação por conta própria, resolvendo problemas reais do dia a dia, e hoje curso graduação tecnológica em Ciência de Dados.",
+  sobre3:"Português nativo. Inglês com leitura avançada e conversação intermediária. Espanhol básico.",
+  ferr_h:"Ferramentas",
+  tools:[["Power BI","modelagem, DAX, desempenho"],["Power Query","consolidação de fontes, regras em M"],["Excel","planilhas de cálculo e planejamento, VBA"],["Python","Selenium, openpyxl, win32com, interfaces desktop"],["ERP","automação de lançamentos via SAP GUI Scripting"]],
+  cont_h:"Contato",cont_p:"Para conversar sobre uma vaga ou um projeto, escreva para:",
+  copiar:"Copiar e-mail",copiado:"Copiado",
+  rodape:"O código deste site e o gerador dos dados fictícios estão em github.com/oyamaguz/oyamaguz.github.io.",
+},
+en:{
+  m_cases:"Work",m_sobre:"About",m_contato:"Contact",
+  h1:"Dashboards, workbooks and automations for the people running production.",
+  lead:"I'm a process planning analyst. I build the tools a team uses every day to see what was produced, what is missing and what is wrong, and I automate the repetitive data entry into the system.",
+  facts:"Power BI, Power Query, Excel, Python and VBA. Itumbiara, Goiás, Brazil.",
+  disc:"The three cases below rebuild tools I created at work. The company (DemoFoods), the industry and every number are made up and were generated by a script; the logic, the rules and the screen design are the same.",
+  flow_h:"Where each tool fits in the operation",
+  f0k:"Start",f0:"Raw material arrives",f0s:"Intake forecast by lot and supplier.",
+  f1k:"Plan",f1:"Stage plan",f1s:"What each stage will produce, and whether material is there.",
+  f2k:"Track",f2:"Processing and packing",f2s:"What got done, what is stuck and what doesn't add up.",
+  f3k:"Record",f3:"ERP postings",f3s:"Lot data goes into the system with no typing.",
+  abrir:"Open the demo",abrir_app:"Open the replica",
+  c1tag:"Power BI, published here as a web page",c1h:"Processing and packing across three plants",
+  c1p1:"<b>The problem:</b> each plant reported in its own workbook. To know what had been processed, packed or was stuck, someone stitched it together by hand, and data entry mistakes only showed up when the month-end numbers didn't match.",
+  c1p2:"<b>What I built:</b> a Power BI model fed by Power Query that consolidates the plants' workbooks and checks the data on its own.",
+  c1l:["Reconciles forecast, processed and packed by raw material lot, splitting blended lots by each source's share.","An alert engine written in M with more than ten rules: yield off tolerance, status that contradicts packing, packaging above plan, missing dates.","In the demo, the plant, product, grade and period filters work like in the original dashboard."],
+  c2tag:"Excel and Python",c2h:"Production stage plan",
+  c2p1:"<b>The problem:</b> planning each stage meant cross-checking channel demand, lot potential and packaging and material stock across different workbooks, every week.",
+  c2p2:"<b>What I built:</b> a workbook that does the whole calculation with Power Query and formulas, and a Python script that opens it, walks through every plant and stage combination and generates this dashboard as a single page.",
+  c2l:["\"Bulk first\" production rule: each stage fills open bulk demand and the rest goes to retail.","Coverage of every packaging item and material against stock, with a safety margin and a \"show only what's short\" filter.","The script finds the workbook's sections by their titles, so inserting rows doesn't break it."],
+  c3tag:"Python desktop app",c3h:"Automation hub",
+  c3p1:"<b>The problem:</b> sixteen automations posting to an ERP and a web system, scattered across scripts and macros. Running them meant knowing where each one lived and in what order to run them.",
+  r1:"min of ERP run time per lot (average)",r2v:"~18.5 h",r2:"saved over 7 weeks",r3:"lot overwrites blocked",
+  c3p2:"<b>What I built:</b> an app that puts everything in one place, checks the files before running, shows the right sequence and logs every posting. The replica uses made-up data; the numbers above come from the real operation.",
+  sobre_h:"About",
+  sobre1:"I work in process planning for an operation with outsourced production units, where I'm the Power BI point person. My job is to turn scattered workbooks into data people can trust and to take typing and double-checking off their plate.",
+  sobre2:"I taught myself Power BI, Python and automation by solving real problems at work, and I'm now studying for a technology degree in Data Science.",
+  sobre3:"Native Portuguese. English: advanced reading, intermediate conversation. Basic Spanish.",
+  ferr_h:"Tools",
+  tools:[["Power BI","data modeling, DAX, performance"],["Power Query","combining sources, rules in M"],["Excel","calculation and planning workbooks, VBA"],["Python","Selenium, openpyxl, win32com, desktop UIs"],["ERP","automated postings with SAP GUI Scripting"]],
+  cont_h:"Contact",cont_p:"To talk about a role or a project, write to:",
+  copiar:"Copy email",copiado:"Copied",
+  rodape:"The code for this site and the fake-data generator live at github.com/oyamaguz/oyamaguz.github.io.",
+}};
+const ALT={pt:{monitoramento:"Painel de processamento e envase com filtros, indicadores e gráficos semanais por fábrica",planejamento:"Plano de etapas com a sequência de etapas da fábrica e a demanda da etapa selecionada",automacoes:"Réplica do aplicativo com o fluxo de quatro passos e o log de execução"},
+           en:{monitoramento:"Processing and packing dashboard with filters, KPIs and weekly charts by plant",planejamento:"Stage plan showing the plant's stage sequence and the selected stage's demand",automacoes:"App replica showing the four-step sequence and the run log"}};
+const langGet=()=>{try{return localStorage.getItem("portfolio.lang")}catch(e){return null}},langSet=v=>{try{localStorage.setItem("portfolio.lang",v)}catch(e){}};
+const store={get(k){try{return localStorage.getItem("pf."+k)}catch(e){return null}},set(k,v){try{localStorage.setItem("pf."+k,v)}catch(e){}}};
+let LANG=langGet()||((navigator.language||"").toLowerCase().startsWith("pt")?"pt":"en");
+const esc=s=>String(s).replace(/[&<>]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;"}[c]));
+function apply(){
+  const T=TXT[LANG];document.documentElement.lang=LANG==="pt"?"pt-BR":"en";
+  // textos com <b> são nossos, não vêm de fora
+  document.querySelectorAll("[data-t]").forEach(el=>{const v=T[el.dataset.t];if(typeof v==="string")el.innerHTML=v.includes("<b>")?v:esc(v);});
+  document.querySelectorAll("[data-list]").forEach(el=>el.innerHTML=T[el.dataset.list].map(x=>`<li>${esc(x)}</li>`).join(""));
+  document.querySelector("[data-tools]").innerHTML=T.tools.map(([a,b])=>`<li><b>${esc(a)}</b><span>${esc(b)}</span></li>`).join("");
+  document.querySelectorAll("[data-img]").forEach(im=>{im.src=`img/${im.dataset.img}_${LANG}.webp`;im.alt=ALT[LANG][im.dataset.img];});
+  document.querySelectorAll(".lang button").forEach(b=>b.setAttribute("aria-pressed",b.dataset.lang===LANG));
+}
+document.querySelectorAll(".lang button").forEach(b=>b.onclick=()=>{LANG=b.dataset.lang;langSet(LANG);apply();});
+document.getElementById("copy").onclick=async e=>{const b=e.currentTarget;
+  try{await navigator.clipboard.writeText("x.oyama11@gmail.com");b.textContent=TXT[LANG].copiado;}
+  catch(_){const r=document.createRange();r.selectNodeContents(document.querySelector(".mail"));const s=getSelection();s.removeAllRanges();s.addRange(r);}
+  setTimeout(()=>b.textContent=TXT[LANG].copiar,1800);};
+apply();
+</script>
 </body>
 </html>

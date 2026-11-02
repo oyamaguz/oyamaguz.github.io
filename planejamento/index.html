@@ -273,8 +273,9 @@ const VAL_EN={"Fábrica 1":"Plant 1","Fábrica 2":"Plant 2","Fábrica 3":"Plant 
   "Confira as situações dos lotes da etapa.":"Check the status of the stage's lots.","PREVISÃO DUPLICADA":"DUPLICATE FORECAST"};
 
 const $=id=>document.getElementById(id);
+const langGet=()=>{try{return localStorage.getItem("portfolio.lang")}catch(e){return null}},langSet=v=>{try{localStorage.setItem("portfolio.lang",v)}catch(e){}};
 const store={get(k){try{return localStorage.getItem("dp."+k)}catch(e){return null}},set(k,v){try{localStorage.setItem("dp."+k,v)}catch(e){}}};
-let LANG=store.get("lang")||((navigator.language||"").toLowerCase().startsWith("pt")?"pt":"en");
+let LANG=langGet()||((navigator.language||"").toLowerCase().startsWith("pt")?"pt":"en");
 const t=(k,vars)=>{let s=TXT[LANG][k]??TXT.pt[k]??k;if(vars)for(const[a,b]of Object.entries(vars))s=s.replace("{"+a+"}",b);return s;};
 const v=s=>s==null?"":LANG==="pt"?s:(VAL_EN[s]??s);
 const esc=s=>String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
@@ -410,7 +411,7 @@ function applyLang(){
   document.querySelectorAll(".lang button").forEach(b=>b.setAttribute("aria-pressed",b.dataset.lang===LANG));
   if(D){$("stamp").textContent=t("dados_ate",{d:fd(D.meta.fim)});render();}
 }
-document.querySelectorAll(".lang button").forEach(b=>b.onclick=()=>{LANG=b.dataset.lang;store.set("lang",LANG);applyLang();});
+document.querySelectorAll(".lang button").forEach(b=>b.onclick=()=>{LANG=b.dataset.lang;langSet(LANG);applyLang();});
 (async()=>{
   setNumbers();
   try{D=window.__DADOS__||await(await fetch("../dados/planejamento.json")).json();}

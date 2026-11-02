@@ -374,8 +374,9 @@ const VAL = {
 
 /* ================= estado e utilidades ================= */
 const $ = id => document.getElementById(id);
+const langGet=()=>{try{return localStorage.getItem("portfolio.lang")}catch(e){return null}},langSet=v=>{try{localStorage.setItem("portfolio.lang",v)}catch(e){}};
 const store = {get(k){try{return localStorage.getItem("dm."+k)}catch(e){return null}}, set(k,v){try{localStorage.setItem("dm."+k,v)}catch(e){}}};
-let LANG = store.get("lang") || ((navigator.language||"").toLowerCase().startsWith("pt") ? "pt" : "en");
+let LANG = langGet() || ((navigator.language||"").toLowerCase().startsWith("pt") ? "pt" : "en");
 const t = (k,vars) => {let s=(TXT[LANG][k]??TXT.pt[k]??k); if(vars)for(const [a,b] of Object.entries(vars))s=s.replace("{"+a+"}",b); return s;};
 const v = s => s==null ? "" : (LANG==="pt" ? s : (VAL.en[s] ?? (s.startsWith("Fornecedor ")?"Supplier "+s.slice(11):s)));
 let NF0,NF1,NF2;
@@ -617,7 +618,7 @@ function render(){
 }
 function fail(msg){const p=document.createElement("p");p.className="empty";p.textContent=msg;document.querySelector("main").prepend(p);}
 
-document.querySelectorAll(".lang button").forEach(b=>b.onclick=()=>{LANG=b.dataset.lang;store.set("lang",LANG);applyLang();});
+document.querySelectorAll(".lang button").forEach(b=>b.onclick=()=>{LANG=b.dataset.lang;langSet(LANG);applyLang();});
 document.querySelectorAll(".tab").forEach(b=>b.onclick=()=>{setTab(b.dataset.tab);try{history.replaceState(null,"","#"+b.dataset.tab)}catch(e){}});
 document.documentElement.style.setProperty("--ff",'"Public Sans",system-ui,sans-serif');
 if(window.Chart)Chart.register(VALS);

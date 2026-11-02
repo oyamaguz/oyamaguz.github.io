@@ -305,8 +305,9 @@ const DATA_EN=[ // tradução das linhas de log geradas em português
 ];
 
 const $=id=>document.getElementById(id);
+const langGet=()=>{try{return localStorage.getItem("portfolio.lang")}catch(e){return null}},langSet=v=>{try{localStorage.setItem("portfolio.lang",v)}catch(e){}};
 const store={get(k){try{return localStorage.getItem("da."+k)}catch(e){return null}},set(k,v){try{localStorage.setItem("da."+k,v)}catch(e){}}};
-let LANG=store.get("lang")||((navigator.language||"").toLowerCase().startsWith("pt")?"pt":"en");
+let LANG=langGet()||((navigator.language||"").toLowerCase().startsWith("pt")?"pt":"en");
 const t=(k,vars)=>{let s=TXT[LANG][k]??TXT.pt[k]??k;if(vars&&typeof s==="string")for(const[a,b]of Object.entries(vars))s=s.replace("{"+a+"}",b);return s;};
 const L=o=>LANG==="pt"?o.pt:o.en;
 const tr=line=>{if(LANG==="pt")return line;let s=line;for(const[re,rep]of DATA_EN)s=s.replace(re,rep);return s;};
@@ -386,7 +387,7 @@ function applyLang(){
   if(!running)setStatus("",t("aguardando"),t("s_pronto"),0);
   if(D)render();
 }
-document.querySelectorAll(".lang button").forEach(b=>b.onclick=()=>{if(running)return;LANG=b.dataset.lang;store.set("lang",LANG);applyLang();});
+document.querySelectorAll(".lang button").forEach(b=>b.onclick=()=>{if(running)return;LANG=b.dataset.lang;langSet(LANG);applyLang();});
 $("bStop").onclick=stop;$("bClear").onclick=()=>{$("log").innerHTML="";};
 $("bValidar").onclick=()=>{t("log_valid").forEach(l=>logLine(`[${now()}] ${l}`));setStatus("ok",LANG==="pt"?"Arquivos ok":"Files ok",t("s_valid"),0);};
 $("bPlanilha").onclick=()=>logLine(`[${now()}] ${t("log_planilha")}`);
