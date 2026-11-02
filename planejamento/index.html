@@ -1,0 +1,425 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Plano de etapas | DemoFoods</title>
+<meta name="description" content="Plano de etapas por fábrica: demanda, embalagens e insumos de cada etapa, com dados fictícios.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;500;600;700&display=swap">
+<style>
+:root{
+  --bg:#F3F4F5; --surface:#FFFFFF; --sunk:#ECEEF0; --ink:#1E2227; --ink-2:#434A53; --muted:#69727D; --line:#D9DDE1;
+  --accent:#2F6690;
+  --var:#2F6690; --ind:#B7792B; --before:#B9C2CB;
+  --short:#B3261E; --short-soft:#F7E3E1; --ok:#3F7A3A; --ok-soft:#E3EFE1; --warn:#A86A00; --warn-soft:#F6ECD9;
+  --s-done:#2B4C66; --s-run:#8DB4D3; --s-new:#B3B8BE;
+  color-scheme:light;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#15181B; --surface:#1D2125; --sunk:#252A2F; --ink:#E6E9EC; --ink-2:#C2C8CE; --muted:#929BA5; --line:#30363C;
+  --accent:#7FAED3;
+  --var:#6E9FC9; --ind:#D49A4E; --before:#4A535C;
+  --short:#EF8A80; --short-soft:#3A2321; --ok:#8CC285; --ok-soft:#1F3320; --warn:#E3B04F; --warn-soft:#352C1C;
+  --s-done:#7FAED3; --s-run:#3E6584; --s-new:#59606A;
+  color-scheme:dark;
+}}
+:root[data-theme="dark"]{
+  --bg:#15181B; --surface:#1D2125; --sunk:#252A2F; --ink:#E6E9EC; --ink-2:#C2C8CE; --muted:#929BA5; --line:#30363C;
+  --accent:#7FAED3;
+  --var:#6E9FC9; --ind:#D49A4E; --before:#4A535C;
+  --short:#EF8A80; --short-soft:#3A2321; --ok:#8CC285; --ok-soft:#1F3320; --warn:#E3B04F; --warn-soft:#352C1C;
+  --s-done:#7FAED3; --s-run:#3E6584; --s-new:#59606A;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+body{margin:0;background:var(--bg);color:var(--ink);font:400 14px/1.45 "Public Sans",system-ui,-apple-system,"Segoe UI",sans-serif;-webkit-font-smoothing:antialiased}
+.n,td.r,th.r{font-variant-numeric:tabular-nums}
+a{color:var(--accent)}
+button,select,input{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.wrap{max-width:1180px;margin:0 auto;padding:0 20px}
+
+.demo{background:var(--ink);color:var(--bg);font-size:13px}
+.demo .wrap{display:flex;gap:8px 20px;align-items:center;justify-content:space-between;flex-wrap:wrap;padding-top:8px;padding-bottom:8px}
+.demo a{color:inherit}
+.demo .acts{display:flex;gap:16px;align-items:center}
+.lang{display:inline-flex;border:1px solid color-mix(in srgb,var(--bg) 40%,transparent);border-radius:3px;overflow:hidden}
+.lang button{background:none;border:0;color:inherit;padding:2px 8px;cursor:pointer;font-size:12px;font-weight:600}
+.lang button[aria-pressed="true"]{background:var(--bg);color:var(--ink)}
+
+.top{display:flex;flex-wrap:wrap;gap:6px 24px;align-items:flex-end;justify-content:space-between;padding:22px 0 16px}
+.top h1{margin:0;font-size:24px;font-weight:700;letter-spacing:-.01em}
+.top p{margin:2px 0 0;color:var(--muted);max-width:70ch}
+.stamp{color:var(--muted);font-size:13px}
+
+/* fábrica + sequência de etapas */
+.plant{display:flex;flex-wrap:wrap;gap:8px 18px;align-items:center;margin-bottom:10px}
+.seg-ctl{display:inline-flex;border:1px solid var(--line);border-radius:3px;background:var(--surface);overflow:hidden}
+.seg-ctl button{border:0;background:none;padding:6px 14px;cursor:pointer;color:var(--ink-2);font-weight:600;border-left:1px solid var(--line)}
+.seg-ctl button:first-child{border-left:0}
+.seg-ctl button[aria-pressed="true"]{background:var(--ink);color:var(--surface)}
+.plant .sum{color:var(--muted);font-size:13px}
+.seq{display:flex;gap:0;overflow-x:auto;background:var(--surface);border:1px solid var(--line);border-radius:3px;scrollbar-width:thin}
+.st{flex:0 0 auto;min-width:92px;padding:9px 12px 10px;border:0;border-left:1px solid var(--line);background:none;text-align:left;cursor:pointer;position:relative}
+.st:first-child{border-left:0}
+.st::before{content:"";position:absolute;left:0;right:0;top:0;height:3px;background:var(--c)}
+.st b{display:block;font-size:15px;font-weight:700}
+.st span{display:block;font-size:12px;color:var(--muted);white-space:nowrap}
+.st .fl{color:var(--short);font-weight:600}
+.st:hover{background:var(--sunk)}
+.st[aria-current="true"]{background:var(--sunk);box-shadow:inset 0 -2px 0 var(--ink)}
+.keys{display:flex;flex-wrap:wrap;gap:4px 16px;font-size:12.5px;color:var(--ink-2);margin:8px 0 18px}
+.keys i{display:inline-block;width:12px;height:3px;margin-right:6px;vertical-align:3px}
+
+/* etapa */
+.stage{background:var(--surface);border:1px solid var(--line);border-radius:3px;margin-bottom:48px}
+.stage-head{padding:20px 24px 4px;display:grid;grid-template-columns:1fr auto;gap:10px 28px;align-items:end}
+.stage-head h2{margin:0;font-size:22px;font-weight:700}
+.stage-head h2 span{color:var(--muted);font-weight:500}
+.status{display:inline-block;font-size:12px;font-weight:600;padding:2px 8px;border-radius:2px;margin-left:10px;vertical-align:4px;background:var(--sunk);color:var(--ink-2)}
+.facts{display:flex;gap:26px;flex-wrap:wrap;margin:0}
+.facts dt{color:var(--muted);font-size:12px}
+.facts dd{margin:0;font-size:16px;font-weight:600}
+.alert{grid-column:1/-1;margin:6px 0 0;padding:8px 12px;border-left:3px solid var(--warn);background:var(--warn-soft);color:var(--ink);font-size:13.5px}
+.tabs{display:flex;gap:2px;padding:14px 20px 0;border-bottom:1px solid var(--line);overflow-x:auto;scrollbar-width:none}
+.tab{border:0;background:none;padding:9px 10px 10px;cursor:pointer;color:var(--muted);font-weight:600;white-space:nowrap;border-bottom:2px solid transparent}
+.tab:hover{color:var(--ink)}
+.tab[aria-selected="true"]{color:var(--ink);border-bottom-color:var(--accent)}
+.badge{display:inline-block;min-width:18px;margin-left:6px;padding:0 5px;border-radius:2px;font-size:11px;line-height:17px;text-align:center;background:var(--sunk);color:var(--muted)}
+.badge.bad{background:var(--short);color:#fff}
+.pane{padding:20px 24px 26px}
+.lead{margin:0 0 18px;color:var(--ink-2);max-width:72ch}
+.empty{padding:16px;border:1px dashed var(--line);border-radius:3px;color:var(--muted)}
+.note{margin:14px 0 0;color:var(--muted);font-size:12.5px;max-width:80ch}
+
+/* demanda */
+.demand{display:grid;gap:26px}
+.dline{display:grid;grid-template-columns:140px 1fr;gap:18px;align-items:start}
+.dname{font-weight:600}
+.dname small{display:block;color:var(--muted);font-weight:400;font-size:12.5px}
+.track{height:26px;border-radius:2px;background:var(--sunk);display:flex;overflow:hidden}
+.track i{display:block;height:100%}
+.track .before{background:var(--before)}
+.track .now{background:var(--c)}
+.track .gap{background:repeating-linear-gradient(-45deg,var(--short-soft) 0 5px,color-mix(in srgb,var(--short) 35%,transparent) 5px 8px)}
+.dnums{display:flex;flex-wrap:wrap;gap:6px 26px;margin-top:9px;font-size:12.5px;color:var(--muted)}
+.dnums b{display:block;font-size:18px;font-weight:600;color:var(--ink)}
+.dnums .k{display:inline-block;width:9px;height:9px;margin-right:6px;vertical-align:0}
+.dnums .short b{color:var(--short)}
+.verdict{margin-top:8px;font-size:13.5px}
+.verdict.bad{color:var(--short)} .verdict.good{color:var(--ok)} .verdict.none{color:var(--muted)}
+
+/* distribuição */
+.split{display:grid;grid-template-columns:1fr 1fr;gap:36px}
+.group h3{margin:0;font-size:14px;font-weight:600}
+.group .tot{color:var(--muted);font-size:12.5px;margin:2px 0 10px}
+.brow{display:grid;grid-template-columns:130px 1fr 96px;gap:12px;align-items:center;padding:8px 0;border-top:1px solid var(--line)}
+.brow:first-of-type{border-top:0}
+.mini{height:8px;border-radius:1px;background:var(--sunk);overflow:hidden}
+.mini i{display:block;height:100%;background:var(--c)}
+.brow .val{text-align:right;font-weight:600}
+.brow .val small{display:block;color:var(--muted);font-weight:400;font-size:12px}
+
+/* tabelas */
+.tools{display:flex;justify-content:flex-end;margin-bottom:8px}
+.switch{display:inline-flex;align-items:center;gap:8px;cursor:pointer;font-size:13px;color:var(--ink-2);user-select:none}
+.switch input{width:16px;height:16px;margin:0;accent-color:var(--accent)}
+.tw{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th{font-size:12px;color:var(--muted);font-weight:600;text-align:left;padding:6px 10px;border-bottom:1px solid var(--line);white-space:nowrap}
+td{padding:9px 10px;border-bottom:1px solid var(--line);vertical-align:middle}
+td.r,th.r{text-align:right;white-space:nowrap}
+th:first-child,td:first-child{padding-left:0}
+td.name small{display:block;color:var(--muted);font-size:12px}
+tr.sub td{padding-top:18px;font-size:12.5px;font-weight:600;color:var(--muted);border-bottom:1px solid var(--line)}
+.neg{color:var(--short);font-weight:600}
+.meter{display:inline-flex;align-items:center;gap:8px}
+.meter .mini{width:96px}
+.meter .mini i{background:var(--ok)}
+.meter.low .mini i{background:var(--short)}
+.meter span{font-size:12px;color:var(--muted);width:46px;text-align:right}
+.pill{display:inline-block;padding:1px 8px;border-radius:2px;font-size:12px;font-weight:600;white-space:nowrap}
+.pill.FALTA{background:var(--short-soft);color:var(--short)}
+.pill.OK{background:var(--ok-soft);color:var(--ok)}
+.pill.NA{background:var(--sunk);color:var(--muted)}
+.pill.W{background:var(--warn-soft);color:var(--warn)}
+.code{white-space:nowrap}
+
+@media (max-width:760px){
+  .wrap{padding-left:16px;padding-right:16px}
+  .top h1{font-size:21px}
+  .stage-head{grid-template-columns:1fr;padding:18px 16px 4px}
+  .pane{padding:18px 16px 22px}
+  .tabs{padding:10px 8px 0}
+  .dline{grid-template-columns:1fr;gap:8px}
+  .split{grid-template-columns:1fr;gap:24px}
+  .meter .mini{width:56px}
+}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<div class="demo">
+  <div class="wrap">
+    <span data-t="aviso"></span>
+    <span class="acts">
+      <span class="lang" role="group" aria-label="Idioma / Language">
+        <button type="button" data-lang="pt">PT</button><button type="button" data-lang="en">EN</button>
+      </span>
+      <a href="../" data-t="voltar"></a>
+    </span>
+  </div>
+</div>
+
+<main class="wrap">
+  <header class="top">
+    <div>
+      <h1 data-t="titulo"></h1>
+      <p data-t="subtitulo"></p>
+    </div>
+    <div class="stamp" id="stamp"></div>
+  </header>
+
+  <div class="plant">
+    <div class="seg-ctl" id="plants" role="group"></div>
+    <span class="sum" id="plantSum"></span>
+  </div>
+  <nav class="seq" id="seq" aria-label="Etapas"></nav>
+  <div class="keys" id="keys"></div>
+
+  <section class="stage" aria-live="polite">
+    <div class="stage-head" id="head"></div>
+    <div class="tabs" role="tablist" id="tabs"></div>
+    <div id="pane" class="pane" role="tabpanel"></div>
+  </section>
+</main>
+
+<script>
+const TXT={
+pt:{
+  aviso:"Demonstração com dados fictícios da DemoFoods. Nenhum número aqui representa uma operação real.",voltar:"Voltar ao portfólio",
+  titulo:"Plano de etapas",subtitulo:"O que cada etapa de produção vai entregar e se há embalagem e insumo para executá-la.",
+  dados_ate:"Dados até {d}",etapas:"etapas",
+  resumo:"{n} etapas: {c} concluídas, {a} em andamento, {i} não iniciadas. {f} abertas com falta de material.",
+  etapa:"etapa", falta_k:"falta",
+  k_done:"Concluída",k_run:"Em andamento",k_new:"Não iniciada",
+  f_lotes:"Lotes",f_volume:"Volume",f_peso:"Peso de produção",f_prod:"Produção",
+  prod_txt:"{u} un de varejo",prod_pk:" e {p} packs",
+  s_dem:"Demanda",s_dist:"Distribuição",s_emb:"Embalagens",s_ins:"Insumos",s_fora:"Fora da faixa",s_lotes:"Lotes",
+  dem_lead:"Quanto da demanda de cada destino as etapas anteriores já cobriram, quanto esta etapa produz e o que ainda fica em aberto.",
+  dem_var:"Varejo",dem_ind:"Industrial",em_un:"em unidades",em_pk:"em packs",u_un:"un",u_pk:"packs",
+  d_total:"Demanda total",d_antes:"Etapas anteriores",d_esta:"Esta etapa",d_falta:"Em aberto depois desta",
+  v_falta:"Ficam {n} {u} em aberto para as próximas etapas.",v_ja:"A demanda já tinha sido atendida pelas etapas anteriores.",v_fecha:"Esta etapa fecha a demanda.",
+  v_exc:"Excedente de {n} {u} além da demanda.",sem_dem:"Sem demanda cadastrada para {p} neste destino.",sem_dem_exc:" As {n} {u} da etapa ficam como excedente.",
+  regra:"Regra de produção: industrial primeiro. Cada etapa faz packs industriais até completar a demanda industrial em aberto, e o restante vai para varejo.",
+  dist_lead:"Como o volume da etapa sai embalado.",dist_ind:"Industrial",dist_var:"Varejo",sem_ind:"Sem packs industriais nesta etapa.",
+  tot_pk:"{n} packs, {kg} kg",tot_un:"{n} un, {kg} kg",
+  emb_lead:"Embalagens que a etapa consome, contra o estoque da fábrica. A necessidade inclui {m} de margem.",
+  ins_lead:"Insumos de produção pela dose por kg ou por mil unidades, e materiais de envase pelo fator de consumo.",
+  concl_lead:"Etapa concluída: o material já foi consumido. A tabela mostra o que a etapa usou; a comparação com o estoque vale só para etapas em aberto.",
+  so_falta:"Mostrar só o que falta",nada_falta:"Nada em falta nesta etapa.",
+  c_item:"Item",c_nec:"Necessidade",c_usado:"Consumo",c_est:"Estoque",c_saldo:"Saldo",c_cob:"Cobertura",c_sit:"Situação",
+  g_prod:"Insumos de produção",g_env:"Materiais de envase",fator:"fator",
+  fora_lead:"{n} categorias com peso médio fora da faixa da embalagem industrial. Elas vão para varejo, somando {u} un.",
+  fora_none:"Todas as categorias desta etapa cabem na faixa da embalagem industrial.",fora_na:"Não se aplica: a etapa não produz packs industriais.",
+  c_lote:"Lote",c_cat:"Categoria",c_med:"Peso médio",c_faixa:"Faixa do industrial",c_motivo:"Motivo",c_un:"Unidades",c_emb:"Embalagem",
+  lotes_lead:"Lotes de matéria-prima da etapa e o que cada um rende pela regra industrial primeiro.",
+  c_seq:"Ordem",c_prod:"Produto",c_peso:"Peso previsto",c_pot:"Potencial (un)",c_pk:"Packs",c_var:"Varejo (un)",c_fase:"Fase",
+  sit:{OK:"Ok",FALTA:"Falta","SEM NECESSIDADE":"Sem necessidade","SEM DEMANDA":"Sem demanda"},
+  alerta_lotes:"Lotes: {l}.",
+},
+en:{
+  aviso:"Demo with made-up DemoFoods data. None of these numbers come from a real operation.",voltar:"Back to portfolio",
+  titulo:"Production stage plan",subtitulo:"What each production stage will deliver, and whether there is packaging and material to run it.",
+  dados_ate:"Data through {d}",etapas:"stages",
+  resumo:"{n} stages: {c} done, {a} in progress, {i} not started. {f} open with material short.",
+  etapa:"stage", falta_k:"short",
+  k_done:"Done",k_run:"In progress",k_new:"Not started",
+  f_lotes:"Lots",f_volume:"Volume",f_peso:"Production weight",f_prod:"Output",
+  prod_txt:"{u} retail units",prod_pk:" and {p} packs",
+  s_dem:"Demand",s_dist:"Breakdown",s_emb:"Packaging",s_ins:"Materials",s_fora:"Off range",s_lotes:"Lots",
+  dem_lead:"How much of each channel's demand earlier stages already covered, what this stage produces, and what stays open.",
+  dem_var:"Retail",dem_ind:"Bulk",em_un:"in units",em_pk:"in packs",u_un:"units",u_pk:"packs",
+  d_total:"Total demand",d_antes:"Earlier stages",d_esta:"This stage",d_falta:"Open after this",
+  v_falta:"{n} {u} stay open for the next stages.",v_ja:"Demand was already met by earlier stages.",v_fecha:"This stage closes the demand.",
+  v_exc:"{n} {u} beyond demand.",sem_dem:"No demand on file for {p} in this channel.",sem_dem_exc:" The stage's {n} {u} are surplus.",
+  regra:"Production rule: bulk first. Each stage fills bulk packs until open bulk demand is met, and the rest goes to retail.",
+  dist_lead:"How the stage's volume comes out packed.",dist_ind:"Bulk",dist_var:"Retail",sem_ind:"No bulk packs in this stage.",
+  tot_pk:"{n} packs, {kg} kg",tot_un:"{n} units, {kg} kg",
+  emb_lead:"Packaging the stage uses, against the plant's stock. Requirement includes a {m} margin.",
+  ins_lead:"Production materials by dose per kg or per thousand units, and packing supplies by usage factor.",
+  concl_lead:"Stage done: the material has been used. The table shows what the stage consumed; the stock check applies only to open stages.",
+  so_falta:"Show only what's short",nada_falta:"Nothing short in this stage.",
+  c_item:"Item",c_nec:"Required",c_usado:"Used",c_est:"Stock",c_saldo:"Balance",c_cob:"Coverage",c_sit:"Status",
+  g_prod:"Production materials",g_env:"Packing supplies",fator:"factor",
+  fora_lead:"{n} grades with average weight outside the bulk pack range. They go to retail, adding up to {u} units.",
+  fora_none:"Every grade in this stage fits the bulk pack range.",fora_na:"Not applicable: the stage makes no bulk packs.",
+  c_lote:"Lot",c_cat:"Grade",c_med:"Avg weight",c_faixa:"Bulk range",c_motivo:"Reason",c_un:"Units",c_emb:"Packaging",
+  lotes_lead:"Raw material lots in the stage and what each yields under the bulk-first rule.",
+  c_seq:"Order",c_prod:"Product",c_peso:"Expected weight",c_pot:"Potential (units)",c_pk:"Packs",c_var:"Retail (units)",c_fase:"Stage",
+  sit:{OK:"Ok",FALTA:"Short","SEM NECESSIDADE":"Not needed","SEM DEMANDA":"No demand"},
+  alerta_lotes:"Lots: {l}.",
+}};
+const VAL_EN={"Fábrica 1":"Plant 1","Fábrica 2":"Plant 2","Fábrica 3":"Plant 3",
+  "Varejo P":"Retail S","Varejo M":"Retail M","Varejo G":"Retail L","Varejo GG":"Retail XL","Industrial padrão":"Bulk standard","Industrial grande":"Bulk large",
+  "Finalizado":"Closed","Em envase":"Packing","Em processamento":"Processing","Não iniciado":"Not started",
+  "Insumo A":"Material A","Insumo B":"Material B","Insumo C":"Material C","Insumo D":"Material D","Insumo E":"Material E",
+  "Lacre industrial":"Bulk pack seal","Etiqueta de produto":"Product label","Palete":"Pallet","Filme stretch":"Stretch film","Caixa de amostra":"Sample box",
+  "ml/kg × peso de produção":"ml/kg × production weight","ml/un × unidades equivalentes":"ml per unit × equivalent units",
+  "2 por pack industrial":"2 per bulk pack","1 por unidade de varejo":"1 per retail unit","por unidade equivalente":"per equivalent unit",
+  "Confira as situações dos lotes da etapa.":"Check the status of the stage's lots.","PREVISÃO DUPLICADA":"DUPLICATE FORECAST"};
+
+const $=id=>document.getElementById(id);
+const store={get(k){try{return localStorage.getItem("dp."+k)}catch(e){return null}},set(k,v){try{localStorage.setItem("dp."+k,v)}catch(e){}}};
+let LANG=store.get("lang")||((navigator.language||"").toLowerCase().startsWith("pt")?"pt":"en");
+const t=(k,vars)=>{let s=TXT[LANG][k]??TXT.pt[k]??k;if(vars)for(const[a,b]of Object.entries(vars))s=s.replace("{"+a+"}",b);return s;};
+const v=s=>s==null?"":LANG==="pt"?s:(VAL_EN[s]??s);
+const esc=s=>String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+let NF0,NF1,PCT,FS;
+function setNumbers(){const l=LANG==="pt"?"pt-BR":"en-US";NF0=new Intl.NumberFormat(l,{maximumFractionDigits:0});NF1=new Intl.NumberFormat(l,{maximumFractionDigits:1});PCT=new Intl.NumberFormat(l,{style:"percent",maximumFractionDigits:0});FS=new Intl.NumberFormat(l,{maximumSignificantDigits:3});}
+const isN=x=>typeof x==="number"&&isFinite(x);
+const n0=x=>isN(x)?NF0.format(x):"–";
+const q=(x,um)=>!isN(x)?"–":(um==="L"||um==="KG")?NF1.format(x):NF0.format(x);
+const fd=iso=>{if(!iso)return"–";const[y,m,d]=iso.split("-");return LANG==="pt"?`${d}/${m}/${y}`:`${m}/${d}/${y}`;};
+const etq=e=>LANG==="pt"?`${e.etapa} etapa`:`Stage ${parseInt(e.etapa)}`;
+const etqShort=e=>LANG==="pt"?e.etapa:"#"+parseInt(e.etapa);
+const STC={"Finalizado":"--s-done","Em andamento":"--s-run","Não iniciado":"--s-new"};
+const STL={"Finalizado":"k_done","Em andamento":"k_run","Não iniciado":"k_new"};
+
+let D,PLANTS,plant,sel=0,tab=store.get("tab")||"dem",onlyShort={emb:false,ins:false};
+
+const aberta=e=>e.status!=="Finalizado";
+const faltas=e=>aberta(e)?{dem:e.demanda.filter(d=>d.situacao==="FALTA").length,emb:e.embalagens.filter(r=>r.situacao==="FALTA").length,ins:e.insumos.filter(r=>r.situacao==="FALTA").length}:{dem:0,emb:0,ins:0};
+const faltaMat=e=>{const f=faltas(e);return f.emb+f.ins;};
+
+function renderPlants(){
+  $("plants").innerHTML=PLANTS.map(p=>`<button type="button" data-p="${esc(p)}" aria-pressed="${p===plant}">${esc(v(p))}</button>`).join("");
+  $("plants").querySelectorAll("button").forEach(b=>b.onclick=()=>{plant=b.dataset.p;sel=0;store.set("plant",plant);render();});
+  const E=D.fabricas[plant],c=s=>E.filter(e=>e.status===s).length;
+  $("plantSum").textContent=t("resumo",{n:E.length,c:c("Finalizado"),a:c("Em andamento"),i:c("Não iniciado"),f:E.filter(e=>faltaMat(e)>0).length});
+}
+function renderSeq(){
+  const E=D.fabricas[plant];
+  $("seq").innerHTML=E.map((e,i)=>{const f=faltaMat(e);return `<button type="button" class="st" style="--c:var(${STC[e.status]})" data-i="${i}" aria-current="${i===sel}">
+    <b>${esc(etqShort(e))}</b><span>${esc(e.produtos)}</span><span class="${f?"fl":""}">${f?`${f} ${t("falta_k")}`:esc(t(STL[e.status]))}</span></button>`;}).join("");
+  $("seq").querySelectorAll(".st").forEach(b=>b.onclick=()=>{sel=+b.dataset.i;render(false);});
+  const cur=$("seq").querySelector('[aria-current="true"]');if(cur)cur.scrollIntoView({block:"nearest",inline:"nearest"});
+  $("keys").innerHTML=Object.entries(STL).map(([s,k])=>`<span><i style="background:var(${STC[s]})"></i>${esc(t(k))}</span>`).join("");
+}
+function renderHead(e){
+  const prod=t("prod_txt",{u:n0(e.un_varejo)})+(e.packs?t("prod_pk",{p:n0(e.packs)}):"");
+  const L=e.lotes.filter(l=>l.situacao&&l.situacao!=="OK");
+  $("head").innerHTML=`<h2>${esc(etq(e))} <span>${esc(e.produtos)}</span><span class="status">${esc(t(STL[e.status]))}</span></h2>
+    <dl class="facts">
+      <div><dt>${t("f_lotes")}</dt><dd class="n">${e.n_lotes}</dd></div>
+      <div><dt>${t("f_volume")}</dt><dd class="n">${n0(e.volume)} kg</dd></div>
+      <div><dt>${t("f_peso")}</dt><dd class="n">${n0(e.peso_producao)} kg</dd></div>
+      <div><dt>${t("f_prod")}</dt><dd class="n">${esc(prod)}</dd></div>
+    </dl>
+    ${e.alerta?`<p class="alert">${esc(v(e.alerta))} ${esc(t("alerta_lotes",{l:L.map(l=>l.lote+" ("+v(l.situacao).toLowerCase()+")").join(", ")}))}</p>`:""}`;
+}
+const SECTIONS=[["dem","s_dem"],["dist","s_dist"],["emb","s_emb"],["ins","s_ins"],["fora","s_fora"],["lotes","s_lotes"]];
+function renderTabs(e){
+  const f=faltas(e),cnt={dem:f.dem,emb:f.emb,ins:f.ins,fora:e.fora_spec.length,lotes:e.lotes.length},bad={dem:f.dem>0,emb:f.emb>0,ins:f.ins>0};
+  $("tabs").innerHTML=SECTIONS.map(([k,l])=>`<button type="button" class="tab" role="tab" data-k="${k}" aria-selected="${k===tab}">${esc(t(l))}${cnt[k]?`<span class="badge${bad[k]?" bad":""}">${cnt[k]}</span>`:""}</button>`).join("");
+  $("tabs").querySelectorAll(".tab").forEach(b=>b.onclick=()=>{tab=b.dataset.k;store.set("tab",tab);renderTabs(e);renderPane(e);});
+}
+
+/* ---------- seções ---------- */
+function paneDem(e){
+  const rows=e.demanda.map(d=>{
+    const I=d.destino==="Industrial",u=I?t("u_pk"):t("u_un"),name=I?t("dem_ind"):t("dem_var"),col=I?"--ind":"--var";
+    if(!isN(d.total)){const ex=isN(d.producao)&&d.producao>0;
+      return `<div class="dline"><div class="dname">${name}<small>${I?t("em_pk"):t("em_un")}</small></div><div><div class="empty">${esc(t("sem_dem",{p:e.produtos}))}${ex?esc(t("sem_dem_exc",{n:n0(d.producao),u})):""}</div></div></div>`;}
+    const T=d.total,antes=Math.min(d.antes||0,T),agora=Math.min(d.producao||0,d.aberta||0),falta=d.falta||0;
+    const w=x=>(T>0?x/T*100:0).toFixed(2)+"%";
+    let verdict,cls;
+    if(falta>0){verdict=t("v_falta",{n:n0(falta),u});cls="bad";}
+    else if((d.aberta||0)===0){verdict=t("v_ja");cls="none";}
+    else{verdict=t("v_fecha");cls="good";}
+    return `<div class="dline" style="--c:var(${col})"><div class="dname">${name}<small>${I?t("em_pk"):t("em_un")}</small></div><div>
+      <div class="track" role="img" aria-label="${esc(verdict)}"><i class="before" style="width:${w(antes)}"></i><i class="now" style="width:${w(agora)}"></i><i class="gap" style="width:${w(falta)}"></i></div>
+      <div class="dnums">
+        <div><span class="k" style="background:var(--sunk);outline:1px solid var(--line)"></span>${t("d_total")}<b class="n">${n0(T)}</b></div>
+        <div><span class="k" style="background:var(--before)"></span>${t("d_antes")}<b class="n">${n0(antes)}</b></div>
+        <div><span class="k" style="background:var(${col})"></span>${t("d_esta")}<b class="n">${n0(d.producao||0)}</b></div>
+        <div class="${falta>0?"short":""}"><span class="k" style="background:var(--short)"></span>${t("d_falta")}<b class="n">${n0(falta)}</b></div>
+      </div>
+      <div class="verdict ${cls}">${esc(verdict)}</div>
+      ${(d.excedente||0)>0?`<div class="note" style="margin-top:4px">${esc(t("v_exc",{n:n0(d.excedente),u}))}</div>`:""}
+    </div></div>`;}).join("");
+  return `<p class="lead">${t("dem_lead")}</p><div class="demand">${rows}</div><p class="note">${t("regra")}</p>`;
+}
+function paneDist(e){
+  const grp=(title,R,I)=>{const tot=R.reduce((a,r)=>a+(r.qtd||0),0),mx=Math.max(1,...R.map(r=>r.qtd||0)),kg=R.reduce((a,r)=>a+(r.peso||0),0);
+    return `<div class="group" style="--c:var(${I?"--ind":"--var"})"><h3>${title}</h3><div class="tot n">${t(I?"tot_pk":"tot_un",{n:n0(tot),kg:n0(kg)})}</div>
+      ${R.map(r=>`<div class="brow"><div>${esc(v(r.item))}</div><div class="mini"><i style="width:${((r.qtd||0)/mx*100).toFixed(1)}%"></i></div><div class="val n">${n0(r.qtd)}<small>${tot?PCT.format((r.qtd||0)/tot):""}</small></div></div>`).join("")}</div>`;};
+  const pk=e.distribuicao.filter(r=>r.unidade==="Packs"),un=e.distribuicao.filter(r=>r.unidade==="Unidades");
+  return `<p class="lead">${t("dist_lead")}</p><div class="split">${pk.length?grp(t("dist_ind"),pk,true):`<div class="group"><h3>${t("dist_ind")}</h3><div class="empty">${t("sem_ind")}</div></div>`}${grp(t("dist_var"),un,false)}</div>`;
+}
+const pill=s=>{const k=s==="FALTA"?"FALTA":s==="OK"?"OK":"NA";return `<span class="pill ${k}">${esc(TXT[LANG].sit[s]||s)}</span>`;};
+const meter=(est,nec)=>{if(!isN(est)||!isN(nec)||nec<=0)return"";const p=est/nec;return `<span class="meter ${p<1?"low":""}"><span class="mini"><i style="width:${Math.min(p,1)*100}%"></i></span><span class="n">${p>3?"> 300%":PCT.format(p)}</span></span>`;};
+const toggle=k=>`<div class="tools"><label class="switch"><input type="checkbox" data-only="${k}" ${onlyShort[k]?"checked":""}>${t("so_falta")}</label></div>`;
+function covRows(R,open,unit){
+  return R.map(r=>open
+    ?`<tr><td class="name"><b>${esc(v(r.item))}</b>${r.regra?`<small>${esc(v(r.regra))}, ${t("fator")} ${FS.format(r.dose)}</small>`:""}</td><td class="r">${q(r.necessidade,r.um)}${r.um?` <small style="color:var(--muted)">${esc(r.um)}</small>`:""}</td><td class="r">${q(r.estoque,r.um)}</td><td class="r ${isN(r.saldo)&&r.saldo<0?"neg":""}">${q(r.saldo,r.um)}</td><td>${meter(r.estoque,r.necessidade)}</td><td>${pill(r.situacao)}</td></tr>`
+    :`<tr><td class="name"><b>${esc(v(r.item))}</b>${r.regra?`<small>${esc(v(r.regra))}, ${t("fator")} ${FS.format(r.dose)}</small>`:""}</td><td class="r">${q(r.necessidade,r.um)}${r.um?` <small style="color:var(--muted)">${esc(r.um)}</small>`:""}</td></tr>`).join("");
+}
+function covTable(head,body,open){return `<div class="tw"><table><thead><tr>${head.map(([h,r])=>`<th${r?' class="r"':""}>${h}</th>`).join("")}</tr></thead><tbody>${body}</tbody></table></div>`;}
+function headCov(open){return open?[[t("c_item")],[t("c_nec"),1],[t("c_est"),1],[t("c_saldo"),1],[t("c_cob")],[t("c_sit")]]:[[t("c_item")],[t("c_usado"),1]];}
+function paneEmb(e){
+  const open=aberta(e),R=open&&onlyShort.emb?e.embalagens.filter(r=>r.situacao==="FALTA"):e.embalagens;
+  const lead=open?t("emb_lead",{m:"3%"}):t("concl_lead");
+  return `<p class="lead">${lead}</p>${open?toggle("emb"):""}${R.length?covTable(headCov(open),covRows(R,open),open):`<div class="empty">${t("nada_falta")}</div>`}`;
+}
+function paneIns(e){
+  const open=aberta(e),show=R=>open&&onlyShort.ins?R.filter(r=>r.situacao==="FALTA"):R;
+  const cols=open?6:2;
+  const blk=(title,R)=>{const S=show(R);return S.length?`<tr class="sub"><td colspan="${cols}">${title}</td></tr>`+covRows(S,open):"";};
+  const body=blk(t("g_prod"),e.insumos.filter(r=>r.um==="L"))+blk(t("g_env"),e.insumos.filter(r=>r.um!=="L"));
+  return `<p class="lead">${open?t("ins_lead"):t("concl_lead")}</p>${open?toggle("ins"):""}${body?covTable(headCov(open),body,open):`<div class="empty">${t("nada_falta")}</div>`}`;
+}
+function paneFora(e){
+  if(!e.packs)return `<div class="empty">${t("fora_na")}</div>`;
+  if(!e.fora_spec.length)return `<div class="empty">${t("fora_none")}</div>`;
+  const u=e.fora_spec.reduce((a,r)=>a+(r.un||0),0);
+  const num=x=>LANG==="pt"?String(x).replace(".",","):String(x).replace(",",".");
+  const motivo=m=>LANG==="pt"?m:m.replace("Abaixo","Below").replace(",",".");
+  return `<p class="lead">${esc(t("fora_lead",{n:e.fora_spec.length,u:n0(u)}))}</p>${covTable([[t("c_lote")],[t("c_cat")],[t("c_med"),1],[t("c_faixa")],[t("c_motivo")],[t("c_un"),1],[t("c_emb")]],
+    e.fora_spec.map(r=>`<tr><td class="code">${esc(r.lote)}</td><td>${esc(r.categoria)}</td><td class="r">${num(r.medida)} kg</td><td>${esc(LANG==="pt"?r.faixa:r.faixa.replace(" a "," to "))} kg</td><td style="color:var(--warn)">${esc(motivo(r.motivo))} kg</td><td class="r">${n0(r.un)}</td><td>${esc(v(r.embalagem))}</td></tr>`).join(""))}`;
+}
+function paneLotes(e){
+  return `<p class="lead">${t("lotes_lead")}</p>${covTable([[t("c_seq"),1],[t("c_lote")],[t("c_prod")],[t("c_fase")],[t("c_peso"),1],[t("c_pot"),1],[t("c_pk"),1],[t("c_var"),1],[""]],
+    e.lotes.map(r=>`<tr><td class="r">${r.seq}</td><td class="code">${esc(r.lote)}</td><td>${esc(r.produto)}</td><td>${esc(v(r.status))}</td><td class="r">${n0(r.peso)} kg</td><td class="r">${n0(r.potencial)}</td><td class="r">${n0(r.packs)}</td><td class="r">${n0(r.un)}</td><td>${r.situacao&&r.situacao!=="OK"?`<span class="pill W">${esc(v(r.situacao))}</span>`:""}</td></tr>`).join(""))}`;
+}
+const PANES={dem:paneDem,dist:paneDist,emb:paneEmb,ins:paneIns,fora:paneFora,lotes:paneLotes};
+function renderPane(e){$("pane").innerHTML=PANES[tab](e);$("pane").querySelectorAll("[data-only]").forEach(i=>i.onchange=()=>{onlyShort[i.dataset.only]=i.checked;renderPane(e);});}
+
+function render(full=true){
+  const E=D.fabricas[plant];if(sel>=E.length)sel=0;const e=E[sel];
+  if(!SECTIONS.some(([k])=>k===tab))tab="dem";
+  renderPlants();renderSeq();renderHead(e);renderTabs(e);renderPane(e);
+}
+function applyLang(){
+  document.documentElement.lang=LANG==="pt"?"pt-BR":"en";setNumbers();
+  document.title=t("titulo")+" | DemoFoods";
+  document.querySelectorAll("[data-t]").forEach(el=>el.textContent=t(el.dataset.t));
+  document.querySelectorAll(".lang button").forEach(b=>b.setAttribute("aria-pressed",b.dataset.lang===LANG));
+  if(D){$("stamp").textContent=t("dados_ate",{d:fd(D.meta.fim)});render();}
+}
+document.querySelectorAll(".lang button").forEach(b=>b.onclick=()=>{LANG=b.dataset.lang;store.set("lang",LANG);applyLang();});
+(async()=>{
+  setNumbers();
+  try{D=window.__DADOS__||await(await fetch("../dados/planejamento.json")).json();}
+  catch(e){document.querySelector("main").insertAdjacentHTML("afterbegin",'<p class="empty">Não foi possível carregar os dados. / The data could not be loaded.</p>');return;}
+  PLANTS=Object.keys(D.fabricas);plant=PLANTS.includes(store.get("plant"))?store.get("plant"):PLANTS[0];
+  // abre na primeira etapa em andamento com falta, para a demo começar mostrando o que o painel faz
+  const E=D.fabricas[plant];const i=E.findIndex(e=>e.status==="Em andamento"&&faltaMat(e)>0);sel=i<0?0:i;
+  applyLang();
+})();
+</script>
+</body>
+</html>

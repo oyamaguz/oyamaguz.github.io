@@ -416,12 +416,12 @@ INTERVALO_MAX_ETAPA = 20             # dias entre entradas para caber na mesma e
 ITENS_EMB = ["Industrial padrão", "Industrial grande", "Varejo P", "Varejo M", "Varejo G", "Varejo GG"]
 VAREJO_POR_CAT = {"A": "Varejo P", "B": "Varejo P", "C": "Varejo M", "D": "Varejo M", "E": "Varejo G", "F": "Varejo GG"}
 INSUMOS = [
-    # item, unidade, regra, dose, base ("kg" = kg de produção, "mil_un" = por mil un, "pack", "un_varejo", "un")
+    # item, unidade, regra, dose, base ("kg" = ml por kg de produção, "ml_un" = ml por unidade, "pack", "un_varejo", "un")
     ("Insumo A", "L", "ml/kg × peso de produção", 1.2, "kg"),
     ("Insumo B", "L", "ml/kg × peso de produção", 2.5, "kg"),
     ("Insumo C", "L", "ml/kg × peso de produção", 0.06, "kg"),
-    ("Insumo D", "L", "ml/mil un × unidades equivalentes", 55, "mil_un"),
-    ("Insumo E", "L", "ml/mil un × unidades equivalentes", 30, "mil_un"),
+    ("Insumo D", "L", "ml/un × unidades equivalentes", 55, "ml_un"),
+    ("Insumo E", "L", "ml/un × unidades equivalentes", 30, "ml_un"),
     ("Lacre industrial", "UN", "2 por pack industrial", 2, "pack"),
     ("Etiqueta de produto", "UN", "1 por unidade de varejo", 1, "un_varejo"),
     ("Palete", "UN", "por unidade equivalente", 0.02, "un"),
@@ -461,16 +461,16 @@ for fab in FABRICAS:
         ind = tot * P[prod]["pref_industrial"]
         demanda[prod] = {"Industrial": round(ind / UN_POR_PACK_IND) if ind else None,  # em packs
                          "Varejo": round(tot - ind)}
-    # estoque por fábrica: entre 0,8× e 2,5× o que uma etapa típica consome,
-    # para as etapas maiores acusarem falta de vez em quando
+    # estoque por fábrica: entre 1,3× e 3× o que uma etapa típica consome,
+    # para só as etapas maiores acusarem falta
     pots = sorted(sum(m["previsao"] for m in g) * 0.95 for g in grupos)
     pot_tipico = pots[len(pots) // 2]
-    fator = lambda: rnd.uniform(0.8, 2.5)
+    fator = lambda: rnd.uniform(1.3, 3.0)
     estoque_emb = {it: round(pot_tipico * fator() * (0.25 / UN_POR_PACK_IND if it.startswith("Industrial") else 0.3))
                    for it in ITENS_EMB}
     estoque_ins = {}
     for nome, um, regra, dose, base in INSUMOS:
-        ref = {"kg": pot_tipico * 20 * 0.94 * dose / 1000, "mil_un": pot_tipico / 1000 * dose / 1000,
+        ref = {"kg": pot_tipico * 20 * 0.94 * dose / 1000, "ml_un": pot_tipico * dose / 1000,
                "pack": pot_tipico * 0.25 / UN_POR_PACK_IND * dose, "un_varejo": pot_tipico * 0.75 * dose,
                "un": pot_tipico * dose}[base]
         estoque_ins[nome] = round(ref * fator(), 1 if um in ("L", "KG") else 0)
@@ -486,7 +486,9 @@ for fab in FABRICAS:
         # regra: industrial primeiro, até completar a demanda aberta; o restante vai para varejo
         dem = []
         ab_ind, ab_var = aberta[prod]["Industrial"], aberta[prod]["Varejo"]
-        packs = min(ab_ind or 0, math.floor(pot_un / UN_POR_PACK_IND)) if ab_ind else 0
+        # só as categorias A a D cabem na faixa da embalagem industrial; o resto vai para varejo
+        elegivel = sum(pp["cat_pesos"][:4]) / sum(pp["cat_pesos"]) * rnd.uniform(0.85, 0.95)
+        packs = min(ab_ind or 0, math.floor(pot_un * elegivel / UN_POR_PACK_IND)) if ab_ind else 0
         un_var = pot_un - packs * UN_POR_PACK_IND
         for destino, total_d, ab, producao in (("Varejo", demanda[prod]["Varejo"], ab_var, un_var),
                                                 ("Industrial", demanda[prod]["Industrial"], ab_ind, packs)):
@@ -527,7 +529,7 @@ for fab in FABRICAS:
 
         ins = []
         for nome, um, regra, dose, base in INSUMOS:
-            qtd = {"kg": peso_prod * dose / 1000, "mil_un": pot_un / 1000 * dose / 1000, "pack": packs * dose,
+            qtd = {"kg": peso_prod * dose / 1000, "ml_un": pot_un * dose / 1000, "pack": packs * dose,
                    "un_varejo": un_var * dose, "un": pot_un * dose}[base]
             nec = round(qtd * (1 + MARGEM_SEGURANCA), 1 if um in ("L", "KG") else 0)
             est = estoque_ins[nome]
@@ -537,13 +539,15 @@ for fab in FABRICAS:
         fora_spec = []
         for m in g:
             if rnd.random() < 0.35:
-                for c in rnd.sample(CATEGORIAS[2:], rnd.randint(1, 3)):
+                for c in rnd.sample(CATEGORIAS[3:], rnd.randint(1, 3)):
                     lim = 12.0
                     med = round(lim - rnd.uniform(0.1, 4), 2)
                     fora_spec.append(dict(lote=m["lote_mp"], categoria=c, medida=med, faixa="12 a 24",
                                           motivo=f"Abaixo {lim - med:.2f}".replace(".", ","),
                                           un=rnd.randint(20, 900), embalagem=VAREJO_POR_CAT[c]))
 
+        if not packs:                                      # sem industrial, a faixa não se aplica
+            fora_spec = []
         lotes = []
         for k, m in enumerate(g, 1):
             pot = round((m["previsao"] or 0) * 0.95)
