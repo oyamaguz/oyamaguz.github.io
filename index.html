@@ -97,7 +97,7 @@ h1,h2,h3{text-wrap:balance}
 .chart{margin-top:8px}
 .chart svg{display:block;width:100%;height:auto;overflow:visible}
 .chart text{font-family:"Public Sans",system-ui,sans-serif}
-.figs{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px;margin-top:14px;padding-top:14px;border-top:1px solid var(--line)}
+.figs{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;margin-top:14px;padding-top:14px;border-top:1px solid var(--line)}
 .figs b{display:block;font-size:22px;font-weight:700;font-variant-numeric:tabular-nums;letter-spacing:-.01em}
 .figs span{font-size:13.5px;color:var(--ink-2)}
 
@@ -222,11 +222,9 @@ h1,h2,h3{text-wrap:balance}
         <h4 data-t="g_h"></h4>
         <div class="legend"><span><i style="background:var(--auto)"></i><span data-t="g_l1"></span></span><span><i style="background:var(--soft)"></i><span data-t="g_l2"></span></span></div>
         <div class="chart" id="chart" role="img"></div>
-        <p class="cap" data-t="r_bloq"></p>
         <div class="figs">
           <div><b>222</b><span data-t="f1"></span></div>
           <div><b id="f2v"></b><span data-t="f2"></span></div>
-          <div><b>20</b><span data-t="f3"></span></div>
         </div>
       </div>
     </div>
@@ -325,10 +323,8 @@ pt:{
   a_ctx:"Dezesseis rotinas de lançamento no ERP e num sistema web, cada uma num script ou macro diferente. Para rodar, era preciso saber onde estava cada rotina e em que ordem executar. Na cadeia de atualização de lotes, com quatro passos, cada lote levava em média 5 minutos e meio.",
   a_sol:["Um aplicativo que agrupa as rotinas por processo e roda tudo a partir de uma planilha de controle.","Antes de executar, confere se os arquivos necessários estão no lugar.","Indica o próximo passo da sequência e mostra o andamento num log, lote a lote.","Cada passo grava no ERP só o que ainda está vazio, o que evita lançar o mesmo lote duas vezes."],
   r_m:"À mão",r_a:"Com o aplicativo",r_cap:"Tempo médio de execução por lote na cadeia de quatro passos, medido em operação. O preparo da planilha é o mesmo nos dois casos.",
-  r_bloq:"Lançamento em dobro evitado: na rodada de 03/09, 20 lotes da planilha já constavam como lançados no ERP. Em vez de lançar de novo, o aplicativo pulou esses lotes e registrou o motivo no log.",
   g_h:"Horas de execução economizadas, setembro e outubro de 2026",g_l1:"Acumulado",g_l2:"Lotes por rodada",
-  f1:"lotes processados sem digitação em 7 semanas",f2:"de execução economizadas no período",f3:"lotes pulados por já estarem lançados, sem lançamento em dobro",
-  bloq:"03/09: 20 lotes já lançados, pulados",
+  f1:"lotes processados sem digitação em 7 semanas",f2:"de execução economizadas no período",
   b_ctx:"A DemoFoods processa e envasa em três fábricas, e cada uma reporta numa planilha própria. O projeto junta essas fontes num único modelo e encontra sozinho o que não fecha, antes que um erro chegue ao fechamento do período.",
   b_sol:["Power Query consolida as planilhas das fábricas num único modelo.","A previsão de cada lote de matéria-prima é conferida contra o processado e o envasado, com os lotes de mistura divididos pela proporção de cada origem.","Um motor de alertas em M aplica mais de dez regras: rendimento fora da tolerância, status que contradiz o envase, consumo de embalagem acima do previsto, datas faltando."],
   b_demo:"A versão web do painel, com as cinco páginas, os filtros por fábrica, produto, categoria e período e a lista de alertas.",
@@ -369,10 +365,8 @@ en:{
   a_ctx:"Sixteen posting routines for an ERP and a web system, each in its own script or macro. Running them meant knowing where each routine lived and in what order to run it. In the four-step lot update chain, each lot took five and a half minutes on average.",
   a_sol:["An app that groups the routines by process and runs everything from a control workbook.","Before running, it checks that the required files are in place.","It points to the next step in the sequence and shows progress in a log, lot by lot.","Each step writes to the ERP only what is still empty, so the same lot is never posted twice."],
   r_m:"By hand",r_a:"With the app",r_cap:"Average run time per lot across the four-step chain, measured in operation. Workbook preparation is the same either way.",
-  r_bloq:"Double posting avoided: in the 09/03 run, 20 lots in the workbook were already posted in the ERP. Instead of posting them again, the app skipped them and logged the reason.",
   g_h:"Run time saved, September and October 2026",g_l1:"Cumulative",g_l2:"Lots per run",
-  f1:"lots processed with no typing in 7 weeks",f2:"of run time saved over the period",f3:"lots skipped because they were already posted, no double posting",
-  bloq:"09/03: 20 lots already posted, skipped",
+  f1:"lots processed with no typing in 7 weeks",f2:"of run time saved over the period",
   b_ctx:"DemoFoods processes and packs in three plants, and each one reports in its own workbook. The project brings those sources into one model and finds on its own what doesn't add up, before an error reaches period close.",
   b_sol:["Power Query combines the plants' workbooks into a single model.","Each raw material lot's forecast is checked against what was processed and packed, with blended lots split by each source's share.","An alert engine in M applies more than ten rules: yield off tolerance, status that contradicts packing, packaging use above plan, missing dates."],
   b_demo:"The web version of the dashboard, with its five pages, the plant, product, grade and period filters, and the alert list.",
@@ -407,7 +401,7 @@ function drawChart(){
   const start=new Date("2026-09-01T00:00:00"),end=new Date("2026-10-24T00:00:00");
   const x=d=>m.l+(new Date(d+"T00:00:00")-start)/(end-start)*iw;
   const hmax=20,lmax=50,yh=h=>m.t+ih-h/hmax*ih,yl=l=>m.t+ih-l/lmax*ih*.5;
-  const ink=css("--ink"),mut=css("--muted"),line=css("--line"),auto=css("--auto"),soft=css("--soft"),man=css("--manual");
+  const ink=css("--ink"),mut=css("--muted"),line=css("--line"),auto=css("--auto"),soft=css("--soft");
   let s=`<svg viewBox="0 0 ${W} ${H}" width="${W}" height="${H}" aria-hidden="true">`;
   for(let h=0;h<=hmax;h+=5){const y=yh(h);s+=`<line x1="${m.l}" x2="${m.l+iw}" y1="${y}" y2="${y}" stroke="${line}"/><text x="${m.l-8}" y="${y+4}" text-anchor="end" font-size="11.5" fill="${mut}">${h}h</text>`;}
   ["2026-09-01","2026-09-15","2026-10-01","2026-10-15"].forEach(t=>{const[,mo,d]=t.split("-");s+=`<text x="${x(t)}" y="${H-8}" text-anchor="middle" font-size="11.5" fill="${mut}">${LANG==="pt"?d+"/"+mo:mo+"/"+d}</text>`;});
@@ -419,8 +413,6 @@ function drawChart(){
   const p=pts.map((q,i)=>(i?"L":"M")+q[0].toFixed(1)+","+q[1].toFixed(1)).join("");
   s+=`<path d="${p} L${m.l+iw},${yh(0)} L${m.l},${yh(0)} Z" fill="${auto}" fill-opacity=".09"/><path d="${p}" fill="none" stroke="${auto}" stroke-width="2.5" stroke-linejoin="round"/>`;
   const ey=yh(acc);s+=`<circle cx="${m.l+iw}" cy="${ey}" r="4.5" fill="${auto}"/><text x="${m.l+iw+8}" y="${ey+5}" font-size="${narrow?13.5:16}" font-weight="700" fill="${ink}">${fmt(HORAS,1)} h</text>`;
-  const bx=x(RODADAS[0][0]),by=yh(RODADAS[0][1]*MIN_POR_LOTE/60);
-  s+=`<line x1="${bx}" x2="${bx}" y1="${by-6}" y2="${m.t-4}" stroke="${man}" stroke-width="1.5" stroke-dasharray="3 3"/><circle cx="${bx}" cy="${by}" r="4" fill="${man}"/><text x="${bx+6}" y="${m.t-8}" font-size="12" font-weight="600" fill="${man}">${esc(TXT[LANG].bloq)}</text>`;
   el.innerHTML=s+"</svg>";
   el.setAttribute("aria-label",LANG==="pt"?`Horas economizadas sobem de 0 a ${fmt(HORAS,1)} em 12 rodadas e ${LOTES} lotes.`:`Hours saved rise from 0 to ${fmt(HORAS,1)} over 12 runs and ${LOTES} lots.`);
 }
