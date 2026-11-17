@@ -1,0 +1,920 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow">
+<meta name="theme-color" content="#6c4ce0">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Meu Dinheiro">
+<link rel="apple-touch-icon" href="icon-180.png">
+<link rel="icon" href="icon-180.png">
+<link rel="manifest" href="manifest.json">
+<title>Meu Dinheiro</title>
+<style>
+  :root{
+    --bg:#f5f3ee; --card:#fff; --ink:#1f1d2b; --muted:#6b6878; --line:#e8e5dd;
+    --accent:#6c4ce0; --accent-soft:#efeafd; --accent-ink:#4b33b0;
+    --green:#1a8f5a; --green-soft:#e5f5ec;
+    --red:#cf3f3f; --red-soft:#fdeaea;
+    --amber:#a8650f; --amber-soft:#fdf2df;
+    --r:18px;
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html,body{margin:0;background:var(--bg);color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    font-size:16px;line-height:1.4}
+  body{min-height:100vh;min-height:100dvh}
+  button{font:inherit;color:inherit;border:0;background:none;cursor:pointer;padding:0}
+  input,select,textarea{font:inherit;font-size:17px;color:var(--ink)}
+  .wrap{max-width:480px;margin:0 auto;padding:calc(env(safe-area-inset-top) + 18px) 16px calc(env(safe-area-inset-bottom) + 96px)}
+  .wrap.noTabs{padding-bottom:calc(env(safe-area-inset-bottom) + 28px)}
+  h1{font-size:28px;margin:4px 0 16px;letter-spacing:-.5px}
+  h2{font-size:20px;margin:22px 0 10px;letter-spacing:-.2px}
+  .muted{color:var(--muted)}
+  .small{font-size:14px}
+  .card{background:var(--card);border-radius:var(--r);padding:16px;margin:0 0 12px;border:1px solid var(--line)}
+
+  /* Hero */
+  .hero{background:var(--accent);color:#fff;border-radius:22px;padding:20px 20px 18px;margin-bottom:14px}
+  .hero .label{opacity:.85;font-size:15px}
+  .hero .big{font-size:40px;font-weight:700;letter-spacing:-1px;margin:2px 0 8px}
+  .hero .sub{font-size:15px;opacity:.95}
+  .hero .sub b{font-weight:700}
+  .hero.neg .big{color:#ffd6d6}
+
+  /* Alertas */
+  .alert{border-radius:var(--r);padding:14px 16px;margin-bottom:10px;border:1px solid transparent}
+  .alert.pay{background:var(--green-soft);border-color:#cbe9d8}
+  .alert.bill{background:var(--amber-soft);border-color:#f3dfba}
+  .alert.late{background:var(--red-soft);border-color:#f5cccc}
+  .alert.info{background:var(--accent-soft);border-color:#ddd4fb}
+  .alert .t{font-weight:700;margin-bottom:2px}
+  .alert .row{display:flex;align-items:center;justify-content:space-between;gap:10px}
+  .days{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+  .days button{min-width:46px;height:46px;border-radius:14px;background:#fff;font-weight:700;font-size:18px;border:1px solid #cbe9d8}
+  .days button.other{font-size:14px;font-weight:600;padding:0 12px}
+  .pill-btn{background:#fff;border-radius:12px;padding:9px 14px;font-weight:600;border:1px solid rgba(0,0,0,.08);white-space:nowrap}
+
+  /* Ações */
+  .actions{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin:6px 0 14px}
+  .act{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:14px 6px 12px;text-align:center;font-weight:600;font-size:14px}
+  .act .ic{width:42px;height:42px;border-radius:14px;margin:0 auto 8px;display:flex;align-items:center;justify-content:center;font-size:22px}
+  .act.in .ic{background:var(--green-soft);color:var(--green)}
+  .act.out .ic{background:var(--red-soft);color:var(--red)}
+  .act.bill .ic{background:var(--amber-soft);color:var(--amber)}
+
+  .kv{display:flex;justify-content:space-between;align-items:baseline;padding:7px 0;gap:12px}
+  .kv + .kv{border-top:1px solid var(--line)}
+  .kv .k{color:var(--muted)}
+  .kv .v{font-weight:600;text-align:right}
+  .pos{color:var(--green)} .negv{color:var(--red)}
+
+  /* Botões */
+  .btn{display:block;width:100%;background:var(--accent);color:#fff;border-radius:16px;padding:16px;font-weight:700;font-size:17px;text-align:center}
+  .btn:disabled{opacity:.4}
+  .btn.sec{background:var(--accent-soft);color:var(--accent-ink)}
+  .btn.ghost{background:transparent;color:var(--accent-ink);border:1px solid #d9d0fa}
+  .btn.danger{background:var(--red-soft);color:var(--red)}
+  .btn + .btn{margin-top:10px}
+  .link{color:var(--accent-ink);font-weight:600;text-decoration:underline;text-underline-offset:3px}
+
+  /* Meses */
+  .month{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:16px;margin-bottom:12px}
+  .month.neg{border-color:#f0b9b9;background:#fffafa}
+  .month .mh{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px}
+  .month .mt{font-size:19px;font-weight:700;text-transform:capitalize}
+  .tag{font-size:12px;font-weight:700;padding:4px 9px;border-radius:999px;background:var(--accent-soft);color:var(--accent-ink)}
+  .tag.now{background:var(--green-soft);color:var(--green)}
+  .month .end{font-size:17px}
+  .warn{margin-top:8px;color:var(--red);font-weight:600;font-size:14px}
+  .toggle{margin-top:8px;color:var(--accent-ink);font-weight:600;font-size:14px}
+  .items{margin-top:8px;border-top:1px solid var(--line)}
+  .it{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--line);width:100%;text-align:left}
+  .it:last-child{border-bottom:0}
+  .it .dot{width:34px;height:34px;border-radius:11px;display:flex;align-items:center;justify-content:center;flex:0 0 auto;font-size:16px}
+  .it .dot.in{background:var(--green-soft);color:var(--green)}
+  .it .dot.out{background:var(--red-soft);color:var(--red)}
+  .it .dot.adj{background:var(--accent-soft);color:var(--accent-ink)}
+  .it .mid{flex:1;min-width:0}
+  .it .d1{font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .it .d2{font-size:13px;color:var(--muted)}
+  .it .val{font-weight:700;white-space:nowrap}
+  .st{font-size:11px;font-weight:700;padding:2px 7px;border-radius:999px;margin-left:4px;vertical-align:1px}
+  .st.feito{background:var(--green-soft);color:var(--green)}
+  .st.previsto,.st.agendado{background:#efeee9;color:var(--muted)}
+  .st.pendente{background:var(--amber-soft);color:var(--amber)}
+  .st.atrasada{background:var(--red-soft);color:var(--red)}
+  .empty{color:var(--muted);padding:14px 0 4px;font-size:15px}
+
+  /* Tabs */
+  .tabs{position:fixed;left:0;right:0;bottom:0;background:rgba(255,255,255,.96);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);
+    border-top:1px solid var(--line);padding:6px 8px calc(env(safe-area-inset-bottom) + 6px);z-index:10}
+  .tabs .in{max-width:480px;margin:0 auto;display:grid;grid-template-columns:repeat(4,1fr)}
+  .tab{display:flex;flex-direction:column;align-items:center;gap:2px;padding:6px 0;font-size:12px;font-weight:600;color:var(--muted)}
+  .tab svg{width:24px;height:24px}
+  .tab.on{color:var(--accent)}
+
+  /* Sheet */
+  .shade{position:fixed;inset:0;background:rgba(20,16,40,.38);z-index:20;opacity:0;transition:opacity .18s}
+  .shade.show{opacity:1}
+  .sheet{position:fixed;left:0;right:0;bottom:0;z-index:21;background:var(--bg);border-radius:24px 24px 0 0;
+    max-height:92vh;max-height:92dvh;overflow:auto;transform:translateY(100%);transition:transform .22s ease-out;
+    padding:10px 18px calc(env(safe-area-inset-bottom) + 20px)}
+  .sheet.show{transform:none}
+  .sheet .inner{max-width:480px;margin:0 auto}
+  .grab{width:40px;height:5px;border-radius:9px;background:#d7d3ca;margin:0 auto 12px}
+  .sheet h3{font-size:21px;margin:4px 0 14px}
+  .field{margin-bottom:14px}
+  .field label{display:block;font-weight:600;margin-bottom:6px}
+  .field .hint{font-size:13px;color:var(--muted);margin-top:5px}
+  .inp{width:100%;background:#fff;border:1px solid #dcd8cf;border-radius:14px;padding:14px;outline:none;-webkit-appearance:none;appearance:none}
+  .inp:focus{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-soft)}
+  .money{position:relative}
+  .money span{position:absolute;left:14px;top:50%;transform:translateY(-50%);color:var(--muted);font-weight:600}
+  .money .inp{padding-left:44px;font-size:22px;font-weight:700}
+  textarea.inp{min-height:120px;font-size:14px}
+  .choices{display:grid;gap:8px}
+  .choice{display:flex;align-items:center;justify-content:space-between;gap:10px;background:#fff;border:1px solid #dcd8cf;border-radius:14px;padding:14px;text-align:left;font-weight:600}
+  .choice .sub{font-weight:400;color:var(--muted);font-size:14px}
+  .choice.on{border-color:var(--accent);background:var(--accent-soft)}
+  .wd{display:grid;grid-template-columns:repeat(7,1fr);gap:6px}
+  .wd button{background:#fff;border:1px solid #dcd8cf;border-radius:12px;padding:12px 0;font-weight:700;font-size:14px}
+  .wd button.on{background:var(--accent);border-color:var(--accent);color:#fff}
+  .stepper{display:flex;align-items:center;gap:14px}
+  .stepper button{width:48px;height:48px;border-radius:14px;background:#fff;border:1px solid #dcd8cf;font-size:24px;font-weight:700}
+  .stepper .n{font-size:26px;font-weight:700;min-width:30px;text-align:center}
+  .calc{background:var(--green-soft);border-radius:14px;padding:12px 14px;margin-bottom:14px;font-weight:600;color:var(--green)}
+
+  /* Setup */
+  .steps{display:flex;gap:6px;margin:0 0 20px}
+  .steps i{flex:1;height:5px;border-radius:9px;background:#e2ded5}
+  .steps i.on{background:var(--accent)}
+  .setup p{margin:0 0 16px}
+  .bill-row{background:#fff;border:1px solid var(--line);border-radius:16px;padding:12px;margin-bottom:10px}
+  .bill-row .g{display:grid;grid-template-columns:1fr 110px 74px;gap:8px}
+  .bill-row .inp{padding:12px 10px}
+  .bill-row .q{margin-top:10px;font-size:14px}
+  .bill-row .q .opts{display:flex;gap:8px;margin-top:6px}
+  .bill-row .q .opts button{flex:1;padding:10px;border-radius:12px;background:var(--bg);border:1px solid #dcd8cf;font-weight:600;font-size:14px}
+  .bill-row .q .opts button.on{background:var(--accent);border-color:var(--accent);color:#fff}
+  .bill-row .rm{color:var(--red);font-size:14px;font-weight:600;margin-top:8px}
+  .lbls{display:grid;grid-template-columns:1fr 110px 74px;gap:8px;font-size:13px;color:var(--muted);margin:0 2px 6px}
+
+  /* Guia */
+  .guide{text-align:center;padding-top:20px}
+  .guide .logo{width:84px;height:84px;border-radius:22px;margin:0 auto 16px;display:block}
+  .guide ol{text-align:left;padding:0;margin:20px 0;list-style:none;counter-reset:s}
+  .guide li{counter-increment:s;background:#fff;border:1px solid var(--line);border-radius:16px;padding:14px 14px 14px 56px;position:relative;margin-bottom:10px}
+  .guide li:before{content:counter(s);position:absolute;left:14px;top:50%;transform:translateY(-50%);width:30px;height:30px;border-radius:10px;background:var(--accent);color:#fff;font-weight:700;display:flex;align-items:center;justify-content:center}
+  .guide .shareic{display:inline-block;width:20px;height:20px;vertical-align:-4px;color:#1a7cf5}
+
+  .toast{position:fixed;left:50%;bottom:calc(env(safe-area-inset-bottom) + 92px);transform:translateX(-50%) translateY(20px);
+    background:#1f1d2b;color:#fff;padding:11px 18px;border-radius:999px;font-weight:600;font-size:15px;opacity:0;transition:all .2s;z-index:30;pointer-events:none}
+  .toast.show{opacity:1;transform:translateX(-50%)}
+</style>
+</head>
+<body>
+<div id="app"></div>
+<div id="sheetHost"></div>
+<div class="toast" id="toast"></div>
+
+<script>
+'use strict';
+/* =========================================================
+   Meu Dinheiro — controle simples de entradas e contas.
+   Os dados ficam só neste aparelho (localStorage).
+   ========================================================= */
+
+const KEY = 'meu-dinheiro-v1';
+const HORIZONTE = 4; // meses à frente do mês atual
+const MESES = ['janeiro','fevereiro','março','abril','maio','junho','julho','agosto','setembro','outubro','novembro','dezembro'];
+const DS = ['dom','seg','ter','qua','qui','sex','sáb'];
+const DL = ['domingo','segunda','terça','quarta','quinta','sexta','sábado'];
+
+/* ---------- utilidades ---------- */
+const pad = n => String(n).padStart(2,'0');
+const iso = d => d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate());
+const parseIso = s => { const [y,m,d] = s.split('-').map(Number); return new Date(y,m-1,d); };
+const hoje = () => iso(new Date());
+const addDays = (s,n) => { const d = parseIso(s); d.setDate(d.getDate()+n); return iso(d); };
+const ymOf = s => s.slice(0,7);
+const addMonths = (ym,n) => { let [y,m] = ym.split('-').map(Number); m += n; while(m>12){m-=12;y++} while(m<1){m+=12;y--} return y+'-'+pad(m); };
+const lastDay = ym => { const [y,m] = ym.split('-').map(Number); return new Date(y,m,0).getDate(); };
+const dueDate = (ym,dia) => ym+'-'+pad(Math.min(dia,lastDay(ym)));
+const mesNome = ym => MESES[Number(ym.slice(5,7))-1];
+const fmtD = s => { const d = parseIso(s); return DS[d.getDay()]+', '+pad(d.getDate())+'/'+pad(d.getMonth()+1); };
+const fmtDLong = s => { const d = parseIso(s); return DL[d.getDay()]+', '+pad(d.getDate())+'/'+pad(d.getMonth()+1); };
+const BRL = new Intl.NumberFormat('pt-BR',{style:'currency',currency:'BRL'});
+const R = v => BRL.format(Math.abs(v) < 0.005 ? 0 : v);
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const uid = () => Date.now().toString(36)+Math.random().toString(36).slice(2,7);
+const round2 = v => Math.round(v*100)/100;
+function parseMoney(str){
+  if (str == null) return NaN;
+  let s = String(str).replace(/R\$|\s/g,'');
+  if (!s) return NaN;
+  if (s.includes(',')) s = s.replace(/\./g,'').replace(',','.');
+  const v = Number(s);
+  return isFinite(v) ? round2(v) : NaN;
+}
+const moneyStr = v => (v==null||isNaN(v)) ? '' : String(round2(v)).replace('.',',');
+
+/* ---------- armazenamento ---------- */
+let S = null;
+function load(){
+  try { const raw = localStorage.getItem(KEY); return raw ? JSON.parse(raw) : null; }
+  catch(e){ return null; }
+}
+function save(){
+  try { localStorage.setItem(KEY, JSON.stringify(S)); }
+  catch(e){ toast('Não consegui salvar neste aparelho'); }
+}
+try { navigator.storage && navigator.storage.persist && navigator.storage.persist(); } catch(e){}
+
+/* ---------- motor de cálculo ----------
+   lanc: {id, data, tipo:'semana'|'extra'|'gasto'|'conta'|'ajuste', valor (com sinal), desc, ref?, contaId?, dias?}
+   Itens previstos são gerados a partir da configuração (pagamentos semanais e contas do mês). */
+function horizonEnd(){ const ym = addMonths(ymOf(hoje()), HORIZONTE); return ym+'-'+pad(lastDay(ym)); }
+
+function paydays(ate){
+  const c = S.config, out = [];
+  let d = c.pagaDesde;
+  const wd = parseIso(d).getDay();
+  d = addDays(d, (c.diaPagamento - wd + 7) % 7);
+  while (d <= ate){ out.push(d); d = addDays(d,7); }
+  return out;
+}
+
+function compute(){
+  const t = hoje(), end = horizonEnd(), c = S.config;
+  const items = [];
+  for (const l of S.lanc){
+    items.push({ ...l, status: l.data <= t ? 'feito' : 'agendado', lancId: l.id });
+  }
+  const semanasFeitas = new Set(S.lanc.filter(l=>l.tipo==='semana').map(l=>l.ref));
+  for (const p of paydays(end)){
+    if (semanasFeitas.has(p)) continue;
+    items.push({ data:p, tipo:'semana', valor: round2(c.diaria*c.diasPadrao), desc:'Pagamento da semana', ref:p,
+                 status: p <= t ? 'pendente' : 'previsto' });
+  }
+  const pagas = new Set(S.lanc.filter(l=>l.tipo==='conta').map(l=>l.contaId+'|'+l.ref));
+  const fimYM = ymOf(end);
+  for (const ct of S.contas){
+    for (let m = ct.inicio; m <= fimYM; m = addMonths(m,1)){
+      if (pagas.has(ct.id+'|'+m)) continue;
+      const due = dueDate(m, ct.dia);
+      items.push({ data:due, tipo:'conta', valor:-ct.valor, desc:ct.nome, ref:m, contaId:ct.id,
+                   status: due < t ? 'atrasada' : 'previsto' });
+    }
+  }
+  items.sort((a,b)=> a.data < b.data ? -1 : a.data > b.data ? 1 : (b.valor - a.valor));
+
+  const saldoAgora = round2(c.saldoInicial + S.lanc.filter(l=>l.data<=t).reduce((s,l)=>s+l.valor,0));
+
+  const months = [];
+  let corrente = c.saldoInicial;
+  for (let m = ymOf(c.dataInicio); m <= fimYM; m = addMonths(m,1)){
+    const its = items.filter(i => ymOf(i.data) === m);
+    const ent = round2(its.filter(i=>i.valor>0).reduce((s,i)=>s+i.valor,0));
+    const sai = round2(-its.filter(i=>i.valor<0).reduce((s,i)=>s+i.valor,0));
+    const ini = round2(corrente), fim = round2(corrente + ent - sai);
+    months.push({ ym:m, ini, ent, sai, fim, items:its });
+    corrente = fim;
+  }
+  return { items, saldoAgora, months };
+}
+
+/* ---------- navegação ---------- */
+let tab = 'inicio';
+let forceBrowser = false;
+let W = null; // estado do assistente inicial
+const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+const isStandalone = window.navigator.standalone === true || (window.matchMedia && matchMedia('(display-mode: standalone)').matches);
+
+function render(){
+  const app = document.getElementById('app');
+  if (!S){
+    if (isIOS && !isStandalone && !forceBrowser){ app.innerHTML = viewGuide(); return; }
+    if (!W) startSetup();
+    app.innerHTML = viewSetup(); bindSetup(); return;
+  }
+  const C = compute();
+  let html = '';
+  if (tab==='inicio') html = viewInicio(C);
+  else if (tab==='meses') html = viewMeses(C);
+  else if (tab==='hist') html = viewHist(C);
+  else html = viewAjustes(C);
+  app.innerHTML = `<div class="wrap">${html}</div>${viewTabs()}`;
+}
+function go(t){ tab = t; render(); window.scrollTo(0,0); }
+
+const ICONS = {
+  inicio:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10.5 12 3l9 7.5V20a1 1 0 0 1-1 1h-5v-6h-6v6H4a1 1 0 0 1-1-1z"/></svg>',
+  meses:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4.5" width="18" height="16.5" rx="2.5"/><path d="M3 9.5h18M8 2.5v4M16 2.5v4"/></svg>',
+  hist:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 6h13M8 12h13M8 18h13M3.5 6h.01M3.5 12h.01M3.5 18h.01"/></svg>',
+  ajustes:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg>'
+};
+function viewTabs(){
+  const t = (id,nome) => `<button class="tab ${tab===id?'on':''}" onclick="go('${id}')">${ICONS[id]}<span>${nome}</span></button>`;
+  return `<nav class="tabs"><div class="in">${t('inicio','Início')}${t('meses','Meses')}${t('hist','Histórico')}${t('ajustes','Ajustes')}</div></nav>`;
+}
+
+/* ---------- guia de instalação (iPhone) ---------- */
+function viewGuide(){
+  const share = '<svg class="shareic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12M7.5 7.5 12 3l4.5 4.5"/><path d="M5 11v8a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-8"/></svg>';
+  return `<div class="wrap noTabs guide">
+    <img class="logo" src="icon-180.png" alt="">
+    <h1>Meu Dinheiro</h1>
+    <p class="muted">Antes de começar, coloque o app na tela do seu iPhone. Assim seus dados ficam guardados direitinho.</p>
+    <ol>
+      <li>Toque no botão <b>Compartilhar</b> ${share} aqui no Safari</li>
+      <li>Role e toque em <b>Adicionar à Tela de Início</b></li>
+      <li>Toque em <b>Adicionar</b></li>
+      <li>Feche o Safari e abra o <b>Meu Dinheiro</b> pelo ícone novo</li>
+    </ol>
+    <p class="small muted">Se você configurar aqui no Safari, os dados não aparecem no ícone e podem sumir sozinhos.</p>
+    <p class="small"><button class="link" onclick="forceBrowser=true;render()">Usar aqui no Safari mesmo assim</button></p>
+  </div>`;
+}
+
+/* ---------- assistente inicial ---------- */
+function startSetup(){
+  W = { step:0, diaria:20, dias:5, diaPagamento:5, saldo:'', jaRecebeuHoje:null,
+        contas:[{ id:uid(), nome:'Dança', valor:'215', dia:'', jaPaga:true }] };
+}
+function viewSetup(){
+  const steps = 5;
+  const bar = `<div class="steps">${Array.from({length:steps},(_,i)=>`<i class="${i<=W.step?'on':''}"></i>`).join('')}</div>`;
+  const today = parseIso(hoje());
+  let body = '';
+  if (W.step===0){
+    body = `<h1>Oi! 👋</h1>
+      <p>Esse app te ajuda a saber <b>quanto dinheiro você tem</b>, <b>quanto vai entrar</b> e <b>quanto vai sair</b> nos próximos meses.</p>
+      <p>Vamos configurar? São só 4 perguntas.</p>
+      <button class="btn" data-act="next">Começar</button>`;
+  } else if (W.step===1){
+    body = `<h1>Quanto você ganha?</h1>
+      <div class="field"><label>Por dia de trabalho</label>
+        <div class="money"><span>R$</span><input class="inp" id="sDiaria" inputmode="decimal" value="${esc(moneyStr(W.diaria))}"></div></div>
+      <div class="field"><label>Quantos dias por semana você costuma trabalhar?</label>
+        <div class="stepper"><button data-act="dmenos">−</button><div class="n" id="sDias">${W.dias}</div><button data-act="dmais">+</button></div>
+        <div class="hint">Semana completa: <b id="sSemana">${R(W.diaria*W.dias)}</b></div></div>
+      <button class="btn" data-act="next">Continuar</button>
+      <button class="btn ghost" data-act="back">Voltar</button>`;
+  } else if (W.step===2){
+    body = `<h1>Que dia da semana você recebe?</h1>
+      <div class="wd">${DS.map((d,i)=>`<button class="${W.diaPagamento===i?'on':''}" data-wd="${i}">${d}</button>`).join('')}</div>
+      <p class="small muted" style="margin-top:12px">Se mudar depois, dá pra trocar nos Ajustes.</p>
+      <button class="btn" data-act="next">Continuar</button>
+      <button class="btn ghost" data-act="back">Voltar</button>`;
+  } else if (W.step===3){
+    const ehHoje = today.getDay() === W.diaPagamento;
+    body = `<h1>Quanto você tem hoje?</h1>
+      <div class="field"><label>Dinheiro que você tem agora (somando tudo)</label>
+        <div class="money"><span>R$</span><input class="inp" id="sSaldo" inputmode="decimal" placeholder="0,00" value="${esc(W.saldo)}"></div>
+        <div class="hint">Se não tem nada, pode deixar 0.</div></div>
+      ${ehHoje ? `<div class="field"><label>Hoje é seu dia de receber. Você já recebeu?</label>
+        <div class="choices">
+          <button class="choice ${W.jaRecebeuHoje===true?'on':''}" data-rh="1">Sim <span class="sub">já está no valor acima</span></button>
+          <button class="choice ${W.jaRecebeuHoje===false?'on':''}" data-rh="0">Ainda não</button>
+        </div></div>` : ''}
+      <button class="btn" data-act="next">Continuar</button>
+      <button class="btn ghost" data-act="back">Voltar</button>`;
+  } else if (W.step===4){
+    const mes = MESES[today.getMonth()];
+    body = `<h1>Contas de todo mês</h1>
+      <p class="muted">Coisas que você paga todo mês. Coloque o valor e o dia que vence.</p>
+      ${W.contas.length ? `<div class="lbls"><span>Nome</span><span>Valor (R$)</span><span>Dia</span></div>` : ''}
+      ${W.contas.map((c,i)=>{
+        const dia = Number(c.dia);
+        const passou = dia>=1 && dia < today.getDate();
+        return `<div class="bill-row">
+          <div class="g">
+            <input class="inp" data-cf="nome" data-i="${i}" placeholder="Ex: Dança" value="${esc(c.nome)}">
+            <input class="inp" data-cf="valor" data-i="${i}" inputmode="decimal" placeholder="0,00" value="${esc(c.valor)}">
+            <input class="inp" data-cf="dia" data-i="${i}" inputmode="numeric" placeholder="dia" value="${esc(c.dia)}">
+          </div>
+          ${passou ? `<div class="q">O dia ${dia} de ${mes} já passou. A de ${mes} já foi paga?
+            <div class="opts"><button class="${c.jaPaga?'on':''}" data-jp="1" data-i="${i}">Sim, já paguei</button><button class="${!c.jaPaga?'on':''}" data-jp="0" data-i="${i}">Ainda não</button></div></div>` : ''}
+          <button class="rm" data-rm="${i}">Remover</button>
+        </div>`;}).join('')}
+      <button class="btn sec" data-act="addconta">+ Adicionar conta</button>
+      <div style="height:14px"></div>
+      <button class="btn" data-act="fim">Pronto!</button>
+      <button class="btn ghost" data-act="back">Voltar</button>`;
+  }
+  return `<div class="wrap noTabs setup">${bar}${body}</div>`;
+}
+function bindSetup(){
+  const app = document.getElementById('app');
+  const d = app.querySelector('#sDiaria');
+  if (d) d.oninput = () => { const v = parseMoney(d.value); if(!isNaN(v)) W.diaria = v; app.querySelector('#sSemana').textContent = R((isNaN(v)?0:v)*W.dias); };
+  const s = app.querySelector('#sSaldo');
+  if (s) s.oninput = () => { W.saldo = s.value; };
+  app.querySelectorAll('[data-cf]').forEach(inp => {
+    inp.oninput = () => { W.contas[+inp.dataset.i][inp.dataset.cf] = inp.value; };
+    if (inp.dataset.cf==='dia') inp.onchange = () => { render(); };
+  });
+  app.onclick = e => {
+    const b = e.target.closest('button'); if(!b) return;
+    if (b.dataset.wd != null){ W.diaPagamento = +b.dataset.wd; W.jaRecebeuHoje = null; render(); return; }
+    if (b.dataset.rh != null){ W.jaRecebeuHoje = b.dataset.rh==='1'; render(); return; }
+    if (b.dataset.jp != null){ W.contas[+b.dataset.i].jaPaga = b.dataset.jp==='1'; render(); return; }
+    if (b.dataset.rm != null){ W.contas.splice(+b.dataset.rm,1); render(); return; }
+    const a = b.dataset.act;
+    if (a==='dmenos'){ W.dias = Math.max(1,W.dias-1); render(); }
+    else if (a==='dmais'){ W.dias = Math.min(7,W.dias+1); render(); }
+    else if (a==='back'){ W.step--; render(); }
+    else if (a==='addconta'){ W.contas.push({id:uid(),nome:'',valor:'',dia:'',jaPaga:true}); render(); }
+    else if (a==='next'){
+      if (W.step===1){ const v = parseMoney(d.value); if (isNaN(v)||v<=0){ toast('Coloque quanto você ganha por dia'); return; } W.diaria = v; }
+      if (W.step===3){
+        const v = W.saldo.trim()==='' ? 0 : parseMoney(W.saldo);
+        if (isNaN(v)){ toast('Valor não entendido'); return; }
+        if (parseIso(hoje()).getDay()===W.diaPagamento && W.jaRecebeuHoje===null){ toast('Responda se já recebeu hoje'); return; }
+      }
+      W.step++; render(); window.scrollTo(0,0);
+    }
+    else if (a==='fim') finishSetup();
+  };
+}
+function finishSetup(){
+  const t = hoje(), curYM = ymOf(t), td = parseIso(t).getDate();
+  const contas = [];
+  for (const c of W.contas){
+    const nome = c.nome.trim(), valor = parseMoney(c.valor), dia = parseInt(c.dia,10);
+    if (!nome && !c.valor && !c.dia) continue;
+    if (!nome){ toast('Falta o nome de uma conta'); return; }
+    if (isNaN(valor)||valor<=0){ toast('Falta o valor de "'+nome+'"'); return; }
+    if (!(dia>=1 && dia<=31)){ toast('Falta o dia de "'+nome+'" (1 a 31)'); return; }
+    const inicio = (dia < td && c.jaPaga) ? addMonths(curYM,1) : curYM;
+    contas.push({ id:c.id, nome, valor, dia, inicio });
+  }
+  const ehHoje = parseIso(t).getDay() === W.diaPagamento;
+  S = {
+    v:1,
+    config:{
+      diaria:W.diaria, diasPadrao:W.dias, diaPagamento:W.diaPagamento,
+      saldoInicial: W.saldo.trim()==='' ? 0 : parseMoney(W.saldo),
+      dataInicio:t, pagaDesde: (ehHoje && W.jaRecebeuHoje) ? addDays(t,1) : t
+    },
+    contas, lanc:[], ultimoResumo:null
+  };
+  W = null; save(); tab='inicio'; render(); toast('Tudo pronto! 🎉');
+}
+
+/* ---------- Início ---------- */
+function viewInicio(C){
+  const t = hoje(), curYM = ymOf(t);
+  const mAtual = C.months.find(m=>m.ym===curYM);
+  let html = `<div class="hero ${C.saldoAgora<0?'neg':''}">
+      <div class="label">Você tem agora</div>
+      <div class="big">${R(C.saldoAgora)}</div>
+      <div class="sub">No fim de ${mesNome(curYM)} vai ter <b>${R(mAtual?mAtual.fim:C.saldoAgora)}</b></div>
+    </div>`;
+
+  // semanas a marcar
+  const pend = C.items.filter(i=>i.tipo==='semana' && i.status==='pendente');
+  for (const p of pend){
+    const max = Math.max(5, S.config.diasPadrao);
+    html += `<div class="alert pay">
+      <div class="t">${p.data===t?'Hoje é dia de receber!':'Dia de receber: '+fmtD(p.data)}</div>
+      <div class="small">Quantos dias você trabalhou nessa semana?</div>
+      <div class="days">${Array.from({length:max+1},(_,n)=>`<button onclick="sheetSemana('${p.data}',${n})">${n}</button>`).join('')}
+        <button class="other" onclick="sheetSemana('${p.data}',null)">outro valor</button></div>
+    </div>`;
+  }
+  // contas atrasadas ou vencendo em até 5 dias
+  const lim = addDays(t,5);
+  const contas = C.items.filter(i=>i.tipo==='conta' && (i.status==='atrasada' || (i.status==='previsto' && i.data<=lim)));
+  for (const c of contas){
+    const late = c.status==='atrasada';
+    const quando = late ? 'venceu '+fmtD(c.data) : (c.data===t ? 'vence hoje' : 'vence '+fmtD(c.data));
+    html += `<div class="alert ${late?'late':'bill'}"><div class="row">
+      <div><div class="t">${esc(c.desc)} · ${R(-c.valor)}</div><div class="small">${quando}</div></div>
+      <button class="pill-btn" onclick="sheetPagarConta('${c.contaId}','${c.ref}')">Paguei</button></div></div>`;
+  }
+
+  html += `<div class="actions">
+    <button class="act in" onclick="sheetRecebi()"><div class="ic">＋</div>Recebi</button>
+    <button class="act out" onclick="sheetGastei()"><div class="ic">−</div>Gastei</button>
+    <button class="act bill" onclick="sheetContas()"><div class="ic">✓</div>Paguei conta</button>
+  </div>`;
+
+  const prox = C.items.find(i=>i.tipo==='semana' && i.status==='previsto');
+  const proxConta = C.items.find(i=>i.tipo==='conta' && i.status==='previsto' && i.data>lim);
+  html += `<div class="card">
+    ${prox?`<div class="kv"><span class="k">Próximo pagamento</span><span class="v">${fmtD(prox.data)} · <span class="pos">${R(prox.valor)}</span></span></div>`:''}
+    ${proxConta?`<div class="kv"><span class="k">Próxima conta</span><span class="v">${esc(proxConta.desc)} · ${fmtD(proxConta.data)} · <span class="negv">${R(-proxConta.valor)}</span></span></div>`:''}
+    ${(!prox && !proxConta)?'<div class="muted">Nada previsto por enquanto.</div>':''}
+  </div>`;
+
+  const dias = S.ultimoResumo ? Math.floor((parseIso(t)-parseIso(S.ultimoResumo))/864e5) : Math.floor((parseIso(t)-parseIso(S.config.dataInicio))/864e5);
+  if (dias >= 14){
+    html += `<div class="alert info small">Faz ${dias} dias que você não manda o resumo. Ele também serve de cópia de segurança dos seus dados.</div>`;
+  }
+  html += `<button class="btn ghost" onclick="enviarResumo()">Enviar resumo pelo WhatsApp</button>`;
+  return html;
+}
+
+/* ---------- Meses ---------- */
+function itemRow(i, clickable){
+  const kind = i.tipo==='ajuste' ? 'adj' : (i.valor>=0 ? 'in' : 'out');
+  const sym = i.tipo==='ajuste' ? '≈' : (i.valor>=0 ? '＋' : '−');
+  const stLabel = {feito:'feito',agendado:'agendado',previsto:'previsto',pendente:'não marcado',atrasada:'atrasada'}[i.status];
+  const showSt = i.status !== 'feito';
+  const extra = i.tipo==='semana' && i.dias!=null ? ` · ${i.dias} dia${i.dias===1?'':'s'}` : '';
+  const inner = `<div class="dot ${kind}">${sym}</div>
+    <div class="mid"><div class="d1">${esc(i.desc)}</div><div class="d2">${fmtD(i.data)}${extra}${showSt?` <span class="st ${i.status}">${stLabel}</span>`:''}</div></div>
+    <div class="val ${i.valor>=0?'pos':'negv'}">${i.valor>=0?'+':'−'} ${R(Math.abs(i.valor))}</div>`;
+  return clickable && i.lancId ? `<button class="it" onclick="sheetItem('${i.lancId}')">${inner}</button>` : `<div class="it">${inner}</div>`;
+}
+const abertos = new Set();
+function toggleMes(ym){ abertos.has(ym) ? abertos.delete(ym) : abertos.add(ym); render(); }
+function viewMeses(C){
+  const curYM = ymOf(hoje());
+  const ms = C.months.filter(m=>m.ym>=curYM);
+  let html = `<h1>Próximos meses</h1>
+    <p class="small muted" style="margin-top:-8px">Os pagamentos que ainda não aconteceram contam com ${S.config.diasPadrao} dias por semana (${R(S.config.diaria*S.config.diasPadrao)}).</p>`;
+  for (const m of ms){
+    const atual = m.ym===curYM, neg = m.fim < 0;
+    html += `<div class="month ${neg?'neg':''}">
+      <div class="mh"><div class="mt">${mesNome(m.ym)}${m.ym.slice(0,4)!==curYM.slice(0,4)?' '+m.ym.slice(0,4):''}</div><span class="tag ${atual?'now':''}">${atual?'este mês':'previsto'}</span></div>
+      <div class="kv"><span class="k">${atual && m.ym===ymOf(S.config.dataInicio)?'Começou com':'Começa com'}</span><span class="v">${R(m.ini)}</span></div>
+      <div class="kv"><span class="k">Vai entrar</span><span class="v pos">+ ${R(m.ent)}</span></div>
+      <div class="kv"><span class="k">Vai sair</span><span class="v negv">− ${R(m.sai)}</span></div>
+      <div class="kv end"><span class="k"><b style="color:var(--ink)">Termina com</b></span><span class="v ${neg?'negv':''}">${R(m.fim)}</span></div>
+      ${neg?`<div class="warn">⚠️ Nesse mês vai faltar dinheiro</div>`:''}
+      <button class="toggle" onclick="toggleMes('${m.ym}')">${abertos.has(m.ym)?'Esconder detalhes':'Ver detalhes'}</button>
+      ${abertos.has(m.ym)?`<div class="items">${m.items.length?m.items.map(i=>itemRow(i,true)).join(''):'<div class="empty">Nada neste mês.</div>'}</div>`:''}
+    </div>`;
+  }
+  return html;
+}
+
+/* ---------- Histórico ---------- */
+function viewHist(C){
+  const t = hoje(), curYM = ymOf(t);
+  let html = `<h1>Histórico</h1>`;
+  const ms = C.months.filter(m=>m.ym<=curYM).reverse();
+  for (const m of ms){
+    const feitos = m.items.filter(i=>i.lancId).slice().reverse();
+    const ent = round2(feitos.filter(i=>i.status==='feito'&&i.valor>0).reduce((s,i)=>s+i.valor,0));
+    const sai = round2(-feitos.filter(i=>i.status==='feito'&&i.valor<0).reduce((s,i)=>s+i.valor,0));
+    html += `<div class="month">
+      <div class="mh"><div class="mt">${mesNome(m.ym)} ${m.ym.slice(0,4)}</div></div>
+      <div class="kv"><span class="k">Entrou</span><span class="v pos">+ ${R(ent)}</span></div>
+      <div class="kv"><span class="k">Saiu</span><span class="v negv">− ${R(sai)}</span></div>
+      <div class="items">${feitos.length?feitos.map(i=>itemRow(i,true)).join(''):'<div class="empty">Nada registrado ainda.</div>'}</div>
+    </div>`;
+  }
+  html += `<p class="small muted">Toque num item pra ver ou apagar.</p>`;
+  return html;
+}
+
+/* ---------- Ajustes ---------- */
+function viewAjustes(C){
+  const c = S.config;
+  return `<h1>Ajustes</h1>
+    <h2>Trabalho</h2>
+    <div class="card">
+      <div class="kv"><span class="k">Ganho por dia</span><span class="v">${R(c.diaria)}</span></div>
+      <div class="kv"><span class="k">Dias por semana</span><span class="v">${c.diasPadrao}</span></div>
+      <div class="kv"><span class="k">Dia de receber</span><span class="v" style="text-transform:capitalize">${DL[c.diaPagamento]}</span></div>
+      <div style="height:10px"></div>
+      <button class="btn sec" onclick="sheetTrabalho()">Alterar</button>
+    </div>
+    <h2>Contas de todo mês</h2>
+    <div class="card">
+      ${S.contas.length ? S.contas.map(ct=>`<button class="it" onclick="sheetConta('${ct.id}')">
+          <div class="dot out">−</div><div class="mid"><div class="d1">${esc(ct.nome)}</div><div class="d2">todo dia ${ct.dia}</div></div>
+          <div class="val">${R(ct.valor)}</div></button>`).join('') : '<div class="empty" style="padding-top:0">Nenhuma conta cadastrada.</div>'}
+      <div style="height:10px"></div>
+      <button class="btn sec" onclick="sheetConta(null)">+ Adicionar conta</button>
+    </div>
+    <h2>Saldo</h2>
+    <div class="card">
+      <p class="small muted" style="margin:0 0 10px">O app diz que você tem ${R(C.saldoAgora)}. Se não bater com o que você tem de verdade, corrija aqui.</p>
+      <button class="btn sec" onclick="sheetCorrigir()">Corrigir saldo</button>
+    </div>
+    <h2>Cópia de segurança</h2>
+    <div class="card">
+      <p class="small muted" style="margin:0 0 10px">Seus dados ficam só neste celular. O resumo leva um código no final: guarde a mensagem e, se trocar de celular, cole o código aqui.</p>
+      <button class="btn sec" onclick="enviarResumo()">Enviar resumo pelo WhatsApp</button>
+      <button class="btn ghost" onclick="sheetRestaurar()">Restaurar de um resumo</button>
+    </div>
+    <div style="height:20px"></div>
+    <button class="btn danger" onclick="sheetApagarTudo()">Apagar tudo e começar de novo</button>
+    <p class="small muted" style="text-align:center;margin-top:16px">Começou em ${fmtD(c.dataInicio)}/${c.dataInicio.slice(0,4)}</p>`;
+}
+
+/* ---------- sheet (janela de baixo) ---------- */
+function openSheet(html, onMount){
+  const host = document.getElementById('sheetHost');
+  host.innerHTML = `<div class="shade" onclick="closeSheet()"></div><div class="sheet"><div class="inner"><div class="grab"></div>${html}</div></div>`;
+  requestAnimationFrame(()=>{ host.querySelector('.shade').classList.add('show'); host.querySelector('.sheet').classList.add('show'); });
+  if (onMount) onMount(host.querySelector('.sheet'));
+}
+function closeSheet(){
+  const host = document.getElementById('sheetHost');
+  const sh = host.querySelector('.sheet'), sd = host.querySelector('.shade');
+  if (!sh) return;
+  sh.classList.remove('show'); sd.classList.remove('show');
+  setTimeout(()=>{ host.innerHTML=''; },220);
+}
+function done(msg){ save(); closeSheet(); render(); if(msg) toast(msg); }
+const moneyField = (id,label,val,hint) => `<div class="field"><label>${label}</label>
+  <div class="money"><span>R$</span><input class="inp" id="${id}" inputmode="decimal" placeholder="0,00" value="${esc(val)}"></div>${hint?`<div class="hint">${hint}</div>`:''}</div>`;
+const dateField = (id,label,val,hint) => `<div class="field"><label>${label}</label>
+  <input class="inp" type="date" id="${id}" value="${val}" min="${S.config.dataInicio}">${hint?`<div class="hint">${hint}</div>`:''}</div>`;
+const $ = id => document.getElementById(id);
+
+/* Recebi */
+function sheetRecebi(){
+  const C = compute(), t = hoje();
+  const semanas = C.items.filter(i=>i.tipo==='semana' && (i.status==='pendente' || i.status==='previsto')).slice(0, 1 + C.items.filter(i=>i.tipo==='semana'&&i.status==='pendente').length);
+  openSheet(`<h3>O que você recebeu?</h3>
+    <div class="choices">
+      ${semanas.map(s=>`<button class="choice" onclick="sheetSemana('${s.data}',null)">
+        <span>Pagamento da semana<br><span class="sub">${s.data<=t?'semana de '+fmtD(s.data):'a receber '+fmtD(s.data)}</span></span><span>›</span></button>`).join('')}
+      <button class="choice" onclick="sheetExtra()"><span>Outro dinheiro<br><span class="sub">alguém me deu, vendi algo…</span></span><span>›</span></button>
+    </div>`);
+}
+function sheetSemana(payday, dias){
+  const c = S.config, t = hoje();
+  const d0 = dias==null ? c.diasPadrao : dias;
+  openSheet(`<h3>Pagamento da semana</h3>
+    <p class="muted small" style="margin-top:-8px">${payday<=t?'Dia de receber: ':'Vai receber: '}${fmtDLong(payday)}</p>
+    <div class="field"><label>Dias trabalhados</label>
+      <div class="stepper"><button id="wMenos">−</button><div class="n" id="wN">${d0}</div><button id="wMais">+</button></div></div>
+    <div class="calc" id="wCalc"></div>
+    ${moneyField('wValor','Quanto você recebeu', moneyStr(c.diaria*d0), 'Se recebeu um valor diferente, é só mudar.')}
+    <button class="btn" id="wOk">Salvar</button>`, el => {
+      let n = d0, mexeu = false;
+      const upd = () => { $('wN').textContent = n; $('wCalc').textContent = n===0 ? 'Não trabalhou nessa semana' : `${n} dia${n===1?'':'s'} × ${R(c.diaria)} = ${R(n*c.diaria)}`; if(!mexeu) $('wValor').value = moneyStr(n*c.diaria); };
+      upd();
+      $('wMenos').onclick = () => { n = Math.max(0,n-1); upd(); };
+      $('wMais').onclick = () => { n = Math.min(7,n+1); upd(); };
+      $('wValor').oninput = () => { mexeu = true; };
+      $('wOk').onclick = () => {
+        const v = $('wValor').value.trim()==='' ? 0 : parseMoney($('wValor').value);
+        if (isNaN(v) || v<0){ toast('Valor não entendido'); return; }
+        S.lanc = S.lanc.filter(l => !(l.tipo==='semana' && l.ref===payday));
+        S.lanc.push({ id:uid(), data: payday<=t ? payday : t, tipo:'semana', valor:v, desc:'Pagamento da semana', ref:payday, dias:n });
+        done(v>0 ? 'Recebimento salvo!' : 'Semana marcada');
+      };
+  });
+}
+function sheetExtra(){
+  openSheet(`<h3>Outro dinheiro</h3>
+    ${moneyField('xValor','Quanto','')}
+    <div class="field"><label>De onde veio?</label><input class="inp" id="xDesc" placeholder="Ex: minha vó me deu"></div>
+    ${dateField('xData','Quando', hoje(), 'Se ainda vai receber, escolha a data futura.')}
+    <button class="btn" id="xOk">Salvar</button>`, () => {
+      setTimeout(()=>$('xValor').focus(),250);
+      $('xOk').onclick = () => {
+        const v = parseMoney($('xValor').value);
+        if (isNaN(v)||v<=0){ toast('Coloque o valor'); return; }
+        const data = $('xData').value || hoje();
+        S.lanc.push({ id:uid(), data, tipo:'extra', valor:v, desc: $('xDesc').value.trim() || 'Dinheiro extra' });
+        done('Salvo!');
+      };
+  });
+}
+
+/* Gastei */
+function sheetGastei(){
+  openSheet(`<h3>Gastei</h3>
+    ${moneyField('gValor','Quanto','')}
+    <div class="field"><label>Com o quê?</label><input class="inp" id="gDesc" placeholder="Ex: lanche, roupa, presente"></div>
+    ${dateField('gData','Quando', hoje(), 'Se é um gasto que ainda vai acontecer, escolha a data futura. Ele entra na previsão.')}
+    <button class="btn" id="gOk">Salvar</button>`, () => {
+      setTimeout(()=>$('gValor').focus(),250);
+      $('gOk').onclick = () => {
+        const v = parseMoney($('gValor').value);
+        if (isNaN(v)||v<=0){ toast('Coloque o valor'); return; }
+        const data = $('gData').value || hoje();
+        S.lanc.push({ id:uid(), data, tipo:'gasto', valor:-v, desc: $('gDesc').value.trim() || 'Gasto' });
+        done('Gasto salvo!');
+      };
+  });
+}
+
+/* Contas */
+function sheetContas(){
+  const C = compute(), t = hoje(), ate = addMonths(ymOf(t),1);
+  const abertas = C.items.filter(i=>i.tipo==='conta' && i.status!=='feito' && i.status!=='agendado' && ymOf(i.data)<=ate);
+  openSheet(`<h3>Qual conta você pagou?</h3>
+    <div class="choices">
+      ${abertas.length ? abertas.map(c=>`<button class="choice" onclick="sheetPagarConta('${c.contaId}','${c.ref}')">
+        <span>${esc(c.desc)} de ${mesNome(c.ref)}<br><span class="sub">${c.status==='atrasada'?'venceu':'vence'} ${fmtD(c.data)}</span></span><span>${R(-c.valor)}</span></button>`).join('')
+        : '<div class="empty">Nenhuma conta em aberto agora. 🎉</div>'}
+    </div>
+    ${S.contas.length?'':'<p class="small muted">Cadastre suas contas nos Ajustes.</p>'}`);
+}
+function sheetPagarConta(contaId, ref){
+  const ct = S.contas.find(c=>c.id===contaId); if(!ct) return;
+  openSheet(`<h3>${esc(ct.nome)} de ${mesNome(ref)}</h3>
+    ${moneyField('pValor','Quanto você pagou', moneyStr(ct.valor))}
+    ${dateField('pData','Quando pagou', hoje())}
+    <button class="btn" id="pOk">Paguei</button>`, () => {
+      $('pOk').onclick = () => {
+        const v = parseMoney($('pValor').value);
+        if (isNaN(v)||v<0){ toast('Valor não entendido'); return; }
+        S.lanc = S.lanc.filter(l => !(l.tipo==='conta' && l.contaId===contaId && l.ref===ref));
+        S.lanc.push({ id:uid(), data: $('pData').value || hoje(), tipo:'conta', valor:-v, desc:ct.nome, contaId, ref });
+        done('Conta paga! ✓');
+      };
+  });
+}
+
+/* Item do histórico */
+function sheetItem(id){
+  const l = S.lanc.find(x=>x.id===id); if(!l) return;
+  const tipoNome = {semana:'Pagamento da semana',extra:'Dinheiro extra',gasto:'Gasto',conta:'Conta paga',ajuste:'Correção de saldo'}[l.tipo];
+  openSheet(`<h3>${esc(l.desc)}</h3>
+    <div class="card">
+      <div class="kv"><span class="k">Tipo</span><span class="v">${tipoNome}</span></div>
+      <div class="kv"><span class="k">Data</span><span class="v">${fmtDLong(l.data)}/${l.data.slice(0,4)}</span></div>
+      ${l.tipo==='semana'&&l.dias!=null?`<div class="kv"><span class="k">Dias trabalhados</span><span class="v">${l.dias}</span></div>`:''}
+      ${l.tipo==='conta'?`<div class="kv"><span class="k">Referente a</span><span class="v" style="text-transform:capitalize">${mesNome(l.ref)}</span></div>`:''}
+      <div class="kv"><span class="k">Valor</span><span class="v ${l.valor>=0?'pos':'negv'}">${l.valor>=0?'+':'−'} ${R(Math.abs(l.valor))}</span></div>
+    </div>
+    <button class="btn danger" id="iDel">Apagar este registro</button>
+    <p class="small muted">Se registrou errado, apague e registre de novo.</p>`, () => {
+      let armado = false;
+      $('iDel').onclick = () => {
+        if (!armado){ armado = true; $('iDel').textContent = 'Toque de novo para confirmar'; return; }
+        S.lanc = S.lanc.filter(x=>x.id!==id); done('Apagado');
+      };
+  });
+}
+
+/* Ajustes: trabalho */
+function sheetTrabalho(){
+  const c = S.config;
+  openSheet(`<h3>Trabalho</h3>
+    ${moneyField('tDiaria','Ganho por dia', moneyStr(c.diaria))}
+    <div class="field"><label>Dias por semana (pra previsão)</label>
+      <div class="stepper"><button id="tMenos">−</button><div class="n" id="tN">${c.diasPadrao}</div><button id="tMais">+</button></div></div>
+    <div class="field"><label>Dia de receber</label>
+      <div class="wd" id="tWd">${DS.map((d,i)=>`<button data-wd="${i}" class="${c.diaPagamento===i?'on':''}">${d}</button>`).join('')}</div></div>
+    <button class="btn" id="tOk">Salvar</button>
+    <p class="small muted">O que já aconteceu não muda. Só a previsão daqui pra frente.</p>`, () => {
+      let n = c.diasPadrao, wd = c.diaPagamento;
+      $('tMenos').onclick = () => { n = Math.max(1,n-1); $('tN').textContent = n; };
+      $('tMais').onclick = () => { n = Math.min(7,n+1); $('tN').textContent = n; };
+      $('tWd').onclick = e => { const b = e.target.closest('button'); if(!b) return; wd = +b.dataset.wd; $('tWd').querySelectorAll('button').forEach(x=>x.classList.toggle('on', +x.dataset.wd===wd)); };
+      $('tOk').onclick = () => {
+        const v = parseMoney($('tDiaria').value);
+        if (isNaN(v)||v<=0){ toast('Coloque o ganho por dia'); return; }
+        c.diaria = v; c.diasPadrao = n;
+        if (wd !== c.diaPagamento){ c.diaPagamento = wd; c.pagaDesde = hoje(); }
+        done('Salvo!');
+      };
+  });
+}
+
+/* Ajustes: conta (nova ou editar) */
+function sheetConta(id){
+  const ct = id ? S.contas.find(c=>c.id===id) : null;
+  const t = hoje(), td = parseIso(t).getDate(), mes = mesNome(ymOf(t));
+  openSheet(`<h3>${ct?'Editar conta':'Nova conta'}</h3>
+    <div class="field"><label>Nome</label><input class="inp" id="cNome" placeholder="Ex: Dança" value="${esc(ct?ct.nome:'')}"></div>
+    ${moneyField('cValor','Valor por mês', ct?moneyStr(ct.valor):'')}
+    <div class="field"><label>Dia que vence</label><input class="inp" id="cDia" inputmode="numeric" placeholder="1 a 31" value="${ct?ct.dia:''}"></div>
+    <div id="cQ"></div>
+    <button class="btn" id="cOk">Salvar</button>
+    ${ct?'<button class="btn danger" id="cDel">Remover conta</button><p class="small muted">Remover não apaga o que você já pagou.</p>':''}`, () => {
+      let jaPaga = true;
+      const q = () => {
+        const dia = parseInt($('cDia').value,10);
+        $('cQ').innerHTML = (!ct && dia>=1 && dia<td) ? `<div class="field"><label>O dia ${dia} de ${mes} já passou. A de ${mes} já foi paga?</label>
+          <div class="choices"><button class="choice ${jaPaga?'on':''}" data-jp="1">Sim, já paguei</button><button class="choice ${!jaPaga?'on':''}" data-jp="0">Ainda não</button></div></div>` : '';
+      };
+      $('cDia').oninput = q;
+      $('cQ').onclick = e => { const b = e.target.closest('button'); if(!b) return; jaPaga = b.dataset.jp==='1'; q(); };
+      $('cOk').onclick = () => {
+        const nome = $('cNome').value.trim(), valor = parseMoney($('cValor').value), dia = parseInt($('cDia').value,10);
+        if (!nome){ toast('Coloque o nome'); return; }
+        if (isNaN(valor)||valor<=0){ toast('Coloque o valor'); return; }
+        if (!(dia>=1&&dia<=31)){ toast('Dia de 1 a 31'); return; }
+        if (ct){ ct.nome = nome; ct.valor = valor; ct.dia = dia; }
+        else {
+          const curYM = ymOf(t);
+          S.contas.push({ id:uid(), nome, valor, dia, inicio: (dia<td && jaPaga) ? addMonths(curYM,1) : curYM });
+        }
+        done('Salvo!');
+      };
+      if (ct){
+        let armado = false;
+        $('cDel').onclick = () => {
+          if (!armado){ armado = true; $('cDel').textContent = 'Toque de novo para confirmar'; return; }
+          S.contas = S.contas.filter(c=>c.id!==ct.id); done('Conta removida');
+        };
+      }
+  });
+}
+
+/* Ajustes: corrigir saldo */
+function sheetCorrigir(){
+  const C = compute();
+  openSheet(`<h3>Corrigir saldo</h3>
+    <p class="muted small" style="margin-top:-8px">O app acha que você tem ${R(C.saldoAgora)}.</p>
+    ${moneyField('kValor','Quanto você tem de verdade agora?','')}
+    <button class="btn" id="kOk">Corrigir</button>`, () => {
+      setTimeout(()=>$('kValor').focus(),250);
+      $('kOk').onclick = () => {
+        const v = parseMoney($('kValor').value);
+        if (isNaN(v)){ toast('Valor não entendido'); return; }
+        const diff = round2(v - C.saldoAgora);
+        if (diff === 0){ closeSheet(); toast('Já está certinho!'); return; }
+        S.lanc.push({ id:uid(), data:hoje(), tipo:'ajuste', valor:diff, desc:'Correção de saldo' });
+        done('Saldo corrigido');
+      };
+  });
+}
+
+/* ---------- resumo + backup ---------- */
+function encode(obj){ return btoa(unescape(encodeURIComponent(JSON.stringify(obj)))); }
+function decode(str){ return JSON.parse(decodeURIComponent(escape(atob(str)))); }
+function textoResumo(){
+  const C = compute(), t = hoje(), curYM = ymOf(t);
+  const linhas = [];
+  linhas.push(`💰 Meu Dinheiro — resumo de ${pad(parseIso(t).getDate())}/${pad(parseIso(t).getMonth()+1)}/${t.slice(0,4)}`);
+  linhas.push(`Tenho agora: ${R(C.saldoAgora)}`);
+  linhas.push('');
+  for (const m of C.months.filter(m=>m.ym>=curYM)){
+    const nome = mesNome(m.ym); const N = nome[0].toUpperCase()+nome.slice(1);
+    linhas.push(`${N}${m.ym===curYM?'':' (previsto)'}: entra ${R(m.ent)} · sai ${R(m.sai)} · termina com ${R(m.fim)}${m.fim<0?' ⚠️':''}`);
+  }
+  const pend = C.items.filter(i=>i.status==='pendente'||i.status==='atrasada');
+  if (pend.length){
+    linhas.push('');
+    linhas.push('Pendente: ' + pend.map(i=> i.tipo==='semana' ? `semana de ${fmtD(i.data)} não marcada` : `${i.desc} de ${mesNome(i.ref)} (venceu ${fmtD(i.data)})`).join('; '));
+  }
+  linhas.push('');
+  linhas.push('Código de backup (não precisa ler, só guardar a mensagem):');
+  linhas.push('MD1:' + encode(S));
+  return linhas.join('\n');
+}
+async function enviarResumo(){
+  const txt = textoResumo();
+  S.ultimoResumo = hoje(); save();
+  try {
+    if (navigator.share){ await navigator.share({ text: txt }); render(); return; }
+  } catch(e){ if (e && e.name==='AbortError'){ render(); return; } }
+  window.location.href = 'https://wa.me/?text=' + encodeURIComponent(txt);
+}
+function sheetRestaurar(){
+  openSheet(`<h3>Restaurar</h3>
+    <p class="muted small" style="margin-top:-8px">Copie a mensagem de resumo inteira (do WhatsApp) e cole aqui.</p>
+    <div class="field"><textarea class="inp" id="rTxt" placeholder="Cole aqui…"></textarea></div>
+    <button class="btn" id="rOk">Restaurar</button>
+    <p class="small muted">Isso troca tudo o que está no app agora pelos dados do resumo.</p>`, () => {
+      let armado = false;
+      $('rOk').onclick = () => {
+        const raw = $('rTxt').value, i = raw.lastIndexOf('MD1:');
+        if (i<0){ toast('Não achei o código nessa mensagem'); return; }
+        const code = raw.slice(i+4).replace(/[^A-Za-z0-9+/=]/g,'');
+        let data;
+        try { data = decode(code); } catch(e){ toast('Código incompleto ou errado'); return; }
+        if (!data || !data.config || !Array.isArray(data.lanc) || !Array.isArray(data.contas)){ toast('Código não é do Meu Dinheiro'); return; }
+        if (!armado){ armado = true; $('rOk').textContent = 'Toque de novo para confirmar'; return; }
+        S = data; done('Dados restaurados!');
+      };
+  });
+}
+function sheetApagarTudo(){
+  openSheet(`<h3>Apagar tudo?</h3>
+    <p class="muted">Todos os registros e configurações deste celular serão apagados. Se quiser guardar, envie o resumo antes.</p>
+    <button class="btn danger" id="aOk">Apagar tudo</button>
+    <button class="btn ghost" onclick="closeSheet()">Cancelar</button>`, () => {
+      let armado = false;
+      $('aOk').onclick = () => {
+        if (!armado){ armado = true; $('aOk').textContent = 'Toque de novo para confirmar'; return; }
+        try { localStorage.removeItem(KEY); } catch(e){}
+        S = null; W = null; closeSheet(); render();
+      };
+  });
+}
+
+/* ---------- toast ---------- */
+let toastT;
+function toast(msg){
+  const el = document.getElementById('toast');
+  el.textContent = msg; el.classList.add('show');
+  clearTimeout(toastT); toastT = setTimeout(()=>el.classList.remove('show'), 2200);
+}
+
+/* ---------- início ---------- */
+S = load();
+render();
+// atualiza quando o app volta pra frente (ex: virou o dia)
+document.addEventListener('visibilitychange', () => { if (!document.hidden && S) render(); });
+</script>
+</body>
+</html>
